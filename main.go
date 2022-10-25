@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"tangzq/http-little-toy/common"
+	timeutil "tangzq/http-little-toy/common/utils/time-util"
 	"tangzq/http-little-toy/model"
 	reqObj "tangzq/http-little-toy/request"
 	"tangzq/http-little-toy/sample"
@@ -102,8 +102,8 @@ func main() {
 				if size > 0 && err == nil {
 					aggregate.Duration += d
 					aggregate.SuccessNum++
-					aggregate.MaxReqTime = common.MaxTime(aggregate.MaxReqTime, d)
-					aggregate.MinReqTime = common.MinTime(aggregate.MinReqTime, d)
+					aggregate.MaxReqTime = timeutil.MaxTime(aggregate.MaxReqTime, d)
+					aggregate.MinReqTime = timeutil.MinTime(aggregate.MinReqTime, d)
 					aggregate.RespSize += int64(size)
 				} else {
 					fmt.Println(err)
@@ -130,8 +130,8 @@ func main() {
 			allAggregate.SuccessNum += r.SuccessNum
 			allAggregate.RespSize += r.RespSize
 			allAggregate.Duration += r.Duration
-			allAggregate.MinReqTime = common.MinTime(allAggregate.MinReqTime, r.MinReqTime)
-			allAggregate.MaxReqTime = common.MaxTime(allAggregate.MaxReqTime, r.MaxReqTime)
+			allAggregate.MinReqTime = timeutil.MinTime(allAggregate.MinReqTime, r.MinReqTime)
+			allAggregate.MaxReqTime = timeutil.MaxTime(allAggregate.MaxReqTime, r.MaxReqTime)
 			respNum++
 		case <-sigChan:
 			cancel()

@@ -11,7 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"tangzq/http-little-toy/common"
+	httputil "tangzq/http-little-toy/common/utils/http-util"
 	"tangzq/http-little-toy/model"
 	"time"
 
@@ -131,7 +131,7 @@ func HandleReq(_ context.Context, client *http.Client, reqObj model.Request) (re
 
 	headerSize := 0
 	if len(resp.Header) > 0 {
-		headerSize = int(common.CalculateHttpHeadersSize(resp.Header))
+		headerSize = int(httputil.CalculateHttpHeadersSize(resp.Header))
 	}
 
 	if resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusCreated {

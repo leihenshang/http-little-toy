@@ -1,7 +1,7 @@
 package model
 
 import (
-	"tangzq/http-little-toy/common"
+	httputil "tangzq/http-little-toy/common/utils/http-util"
 	"time"
 )
 
@@ -23,12 +23,12 @@ type RequestStats struct {
 
 func (r Request) Valid() (err error) {
 	// 检查 url 格式
-	if urlErr := common.CheckUrlAddr(r.Url); urlErr != nil {
+	if urlErr := httputil.CheckUrlAddr(r.Url); urlErr != nil {
 		return urlErr
 	}
 
 	// 检查 method
-	if methodErr := common.CheckHttpMethod(r.Method); methodErr != nil {
+	if methodErr := httputil.CheckHttpMethod(r.Method); methodErr != nil {
 		return methodErr
 	}
 

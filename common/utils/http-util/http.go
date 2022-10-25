@@ -1,10 +1,11 @@
-package common
+package http_util
 
 import (
 	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
+	checkutil "tangzq/http-little-toy/common/utils/check-util"
 )
 
 func GetHttpMethods() []string {
@@ -64,7 +65,7 @@ func CheckUrlAddr(urlAddr string) (err error) {
 	hostName := urlObj.Hostname()
 	port := urlObj.Port()
 
-	portErr := ConnectivityTest(fmt.Sprintf("%s:%s", hostName, port))
+	portErr := checkutil.ConnectivityTest(fmt.Sprintf("%s:%s", hostName, port))
 	if portErr != nil {
 		return portErr
 	}
