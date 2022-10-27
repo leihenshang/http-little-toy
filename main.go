@@ -18,7 +18,7 @@ import (
 )
 
 const Version = "0.0.1"
-const Agent = "little-toy"
+const Agent = "http-little-toy"
 
 var respChan chan model.RequestStats
 
