@@ -18,8 +18,9 @@ import (
 	"golang.org/x/net/http2"
 )
 
-func GetHttpClient(disableKeepAlive bool,
-	disableCompression bool,
+func GetHttpClient(
+	keepAlive bool,
+	compression bool,
 	timeout time.Duration,
 	skipVerify bool,
 	allowRedirects bool,
@@ -27,6 +28,9 @@ func GetHttpClient(disableKeepAlive bool,
 	useHttp2 bool,
 ) (client *http.Client, err error) {
 	client = &http.Client{}
+
+	disableKeepAlive := !keepAlive
+	disableCompression := !compression
 
 	client.Transport = &http.Transport{
 		ResponseHeaderTimeout: time.Millisecond * time.Duration(timeout),

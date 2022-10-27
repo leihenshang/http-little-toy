@@ -24,12 +24,22 @@ var respChan chan model.RequestStats
 
 var duration = flag.Int("d", 0, "Duration of request.The unit is seconds.")
 var thread = flag.Int("t", 0, "Number of threads.")
-var keepAlive = flag.Bool("k", false, "Use keep-alive for http protocol.")
+var keepAlive = flag.Bool("k", true, "Use keep-alive for http protocol.")
+var compression = flag.Bool("compression", true, "Use keep-alive for http protocol.")
 var reqUrl = flag.String("u", "", "The URL you want to test")
 var requestFile = flag.String("f", "", "specify the request definition file.")
 var generateSample = flag.Bool("g", false, "generate the request definition file template to the current directory.")
 var version = flag.Bool("v", false, "show app version.")
-var timeOut = flag.Uint("time-out", 1000, "the time out to wait response")
+var timeOut = flag.Uint("timeOut", 1000, "the time out to wait response")
+var skipVerify = flag.Bool("skipVerify", false, "TLS skipVerify")
+var allowRedirects = flag.Bool("allowRedirects", true, "allowRedirects")
+
+var useHttp2 = flag.Bool("useHttp2", false, "useHttp2")
+
+var clientCert = flag.String("clientCert", "", "clientCert")
+var clientKey = flag.String("clientKey", "", "clientKey")
+var caCert = flag.String("caCert", "", "caCert")
+
 var helpTips = flag.Bool("h", false, "show help tips")
 
 func printDefault() {
@@ -91,7 +101,17 @@ func main() {
 	for i := 1; i <= *thread; i++ {
 		go func() {
 			httpCtx := context.TODO()
-			client, clientErr := reqObj.GetHttpClient(*keepAlive, false, time.Duration(*timeOut), false, false, "", "", "", false)
+			client, clientErr := reqObj.GetHttpClient(
+				*keepAlive,
+				*compression,
+				time.Duration(*timeOut),
+				*skipVerify,
+				*allowRedirects,
+				*clientCert,
+				*clientKey,
+				*caCert,
+				*useHttp2,
+			)
 			if clientErr != nil {
 				log.Fatal(clientErr)
 			}
