@@ -58,7 +58,7 @@ func main() {
 	flag.Parse()
 
 	// 打印帮助
-	if *helpTips {
+	if len(os.Args[1:]) == 0 || os.Args[1] == "-h" || os.Args[1] == "-help" || os.Args[1] == "--help" {
 		printDefault()
 		return
 	}
