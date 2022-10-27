@@ -1,1 +1,7 @@
+# mac directoy manifest
 .DS_Store
+
+# complied the product
+httpToy
+
+
