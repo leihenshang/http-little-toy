@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	timeutil "tangzq/http-little-toy/common/utils/time-util"
+	timeUtil "tangzq/http-little-toy/common/utils/time-util"
 	"tangzq/http-little-toy/model"
 	reqObj "tangzq/http-little-toy/request"
 	"tangzq/http-little-toy/sample"
@@ -88,8 +88,8 @@ func main() {
 		log.Fatal(validErr)
 	}
 
-	fmt.Printf("use %d coroutines,duration %d seconds.", *thread, *duration)
-	fmt.Printf("request: %+v\n", request)
+	fmt.Printf("use %d coroutines,duration %d seconds.\n", *thread, *duration)
+	fmt.Printf("url: %v method:%v header: %v \n", request.Url, request.Method, request.Header)
 
 	// 使用该通道来存储请求的结果,并启用一个协程来读取该通道的结果
 	respChan = make(chan model.RequestStats, *thread)
@@ -122,8 +122,8 @@ func main() {
 				if size > 0 && err == nil {
 					aggregate.Duration += d
 					aggregate.SuccessNum++
-					aggregate.MaxReqTime = timeutil.MaxTime(aggregate.MaxReqTime, d)
-					aggregate.MinReqTime = timeutil.MinTime(aggregate.MinReqTime, d)
+					aggregate.MaxReqTime = timeUtil.MaxTime(aggregate.MaxReqTime, d)
+					aggregate.MinReqTime = timeUtil.MinTime(aggregate.MinReqTime, d)
 					aggregate.RespSize += int64(size)
 				} else {
 					fmt.Println(err)
@@ -150,8 +150,8 @@ func main() {
 			allAggregate.SuccessNum += r.SuccessNum
 			allAggregate.RespSize += r.RespSize
 			allAggregate.Duration += r.Duration
-			allAggregate.MinReqTime = timeutil.MinTime(allAggregate.MinReqTime, r.MinReqTime)
-			allAggregate.MaxReqTime = timeutil.MaxTime(allAggregate.MaxReqTime, r.MaxReqTime)
+			allAggregate.MinReqTime = timeUtil.MinTime(allAggregate.MinReqTime, r.MinReqTime)
+			allAggregate.MaxReqTime = timeUtil.MaxTime(allAggregate.MaxReqTime, r.MaxReqTime)
 			respNum++
 		case <-sigChan:
 			cancel()
