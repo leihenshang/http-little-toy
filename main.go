@@ -32,7 +32,7 @@ var helpTips = flag.Bool("h", false, "show help tips")
 var version = flag.Bool("v", false, "show app version.")
 
 // url
-var reqUrl = flag.String("url", "", "The URL you want to test")
+var reqUrl = flag.String("u", "", "The URL you want to test")
 
 // 持续时间
 var duration = flag.Int("d", 0, "Duration of request.The unit is seconds.")
