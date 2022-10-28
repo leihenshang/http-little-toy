@@ -17,36 +17,67 @@ import (
 	"time"
 )
 
+// 版本
 const Version = "0.0.1"
+
+// 请求代理名称
 const Agent = "http-little-toy"
 
 var respChan chan model.RequestStats
 
-var duration = flag.Int("d", 0, "Duration of request.The unit is seconds.")
-var thread = flag.Int("t", 0, "Number of threads.")
-var keepAlive = flag.Bool("k", true, "Use keep-alive for http protocol.")
-var compression = flag.Bool("compression", true, "Use keep-alive for http protocol.")
-var reqUrl = flag.String("u", "", "The URL you want to test")
-var requestFile = flag.String("f", "", "specify the request definition file.")
-var generateSample = flag.Bool("g", false, "generate the request definition file template to the current directory.")
-var version = flag.Bool("v", false, "show app version.")
-var timeOut = flag.Uint("timeOut", 1000, "the time out to wait response")
-var skipVerify = flag.Bool("skipVerify", false, "TLS skipVerify")
-var allowRedirects = flag.Bool("allowRedirects", true, "allowRedirects")
-
-var useHttp2 = flag.Bool("useHttp2", false, "useHttp2")
-
-var clientCert = flag.String("clientCert", "", "clientCert")
-var clientKey = flag.String("clientKey", "", "clientKey")
-var caCert = flag.String("caCert", "", "caCert")
-
+// 帮助
 var helpTips = flag.Bool("h", false, "show help tips")
 
+// 版本打印
+var version = flag.Bool("v", false, "show app version.")
+
+// url
+var reqUrl = flag.String("url", "", "The URL you want to test")
+
+// 持续时间
+var duration = flag.Int("d", 0, "Duration of request.The unit is seconds.")
+
+// 线程数
+var thread = flag.Int("t", 0, "Number of threads.")
+
+// 启用keep alive
+var keepAlive = flag.Bool("keepAlive", true, "Use keep-alive for http protocol.")
+
+// 启用压缩
+var compression = flag.Bool("compression", true, "Use keep-alive for http protocol.")
+
+// 请求文件
+var requestFile = flag.String("file", "", "specify the request definition file.")
+
+// 创建请求文件模板
+var generateSample = flag.Bool("gen", false, "generate the request definition file template to the current directory.")
+
+// 等待响应超时时间
+var timeOut = flag.Uint("timeOut", 1000, "the time out to wait response")
+
+// 跳过TLS验证
+var skipVerify = flag.Bool("skipVerify", false, "TLS skipVerify")
+
+// 允许重定向
+var allowRedirects = flag.Bool("allowRedirects", true, "allowRedirects")
+
+// 使用http2
+var useHttp2 = flag.Bool("useHttp2", false, "useHttp2")
+
+// 客户端证书
+var clientCert = flag.String("clientCert", "", "clientCert")
+
+// 客户端秘钥
+var clientKey = flag.String("clientKey", "", "clientKey")
+
+// ca证书
+var caCert = flag.String("caCert", "", "caCert")
+
 func printDefault() {
-	fmt.Println("Usage: http-little-toy <options>")
+	fmt.Println("Usage: httpToy <options>")
 	fmt.Println("Options:")
 	flag.VisitAll(func(flag *flag.Flag) {
-		fmt.Println("\t-"+flag.Name, "\t", flag.Usage, "(Default "+flag.DefValue+")")
+		fmt.Println("\t-"+flag.Name, "\t", flag.Usage, "(default:"+flag.DefValue+")")
 	})
 }
 
@@ -58,7 +89,7 @@ func main() {
 	flag.Parse()
 
 	// 打印帮助
-	if len(os.Args[1:]) == 0 || os.Args[1] == "-h" || os.Args[1] == "-help" || os.Args[1] == "--help" {
+	if *helpTips == true {
 		printDefault()
 		return
 	}
