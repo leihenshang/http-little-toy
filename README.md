@@ -1,17 +1,47 @@
 # http-little-toy
 
 #### 介绍
-一个关于的http基准测试工具。
-灵感来自于 github 上的各种叫做wrk的工具，自己也造一个轮子给自己测并发用。
 
-#### 软件架构
-由golang开发，使用Json作为配置文件。
+一个http基准测试工具。
 
+灵感来自于 github 上的各种叫做wrk的工具，自己也造一个轮子。
+
+#### todo
+
+[ ] 命令行中加入设置 `header` 头
+
+[ ] 命令行中加入设置 `request` 负载
+
+#### 使用
+
+一般使用 -d 控制请求时间(秒),-t 控制线程数（当做用户数量来理解）就可以了。推荐使用request.json文件。
+
+```bash
+$ go run . -h
+Usage: httpToy <options>
+Options:
+        -allowRedirects          allowRedirects (default:true)
+        -caCert          caCert (default:)
+        -clientCert      clientCert (default:)
+        -clientKey       clientKey (default:)
+        -compression     Use keep-alive for http protocol. (default:true)
+        -d       Duration of request.The unit is seconds. (default:0)
+        -file    specify the request definition file. (default:)
+        -gen     generate the request definition file template to the current directory. (default:false)
+        -h       show help tips (default:false)
+        -keepAlive       Use keep-alive for http protocol. (default:true)
+        -skipVerify      TLS skipVerify (default:false)
+        -t       Number of threads. (default:0)
+        -timeOut         the time out to wait response (default:1000)
+        -u       The URL you want to test (default:)
+        -useHttp2        useHttp2 (default:false)
+        -v       show app version. (default:false)
+
+```
 
 #### 安装教程
-1. 编译成二进制文件直接运行，还可以放到全局变量中从而直接从命令行中执行。
 
-#### 使用说明
+ 编译成二进制文件直接运行，还可以放到全局变量中从而直接从命令行中执行。
 
 编译:
 
