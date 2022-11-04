@@ -9,7 +9,6 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"net/url"
 	"strings"
 	httputil "tangzq/http-little-toy/common/utils/http-util"
 	"tangzq/http-little-toy/model"
@@ -93,27 +92,25 @@ func HandleReq(_ context.Context, client *http.Client, reqObj model.Request) (re
 	respSize = -1
 	duration = -1
 
-	formValues := url.Values{}
-	if len(reqObj.FormData) > 0 {
-		for k, v := range reqObj.FormData {
-			formValues.Add(k, v)
-		}
+	var reader io.Reader
+	if reqObj.Body != "" {
+		reader = strings.NewReader(reqObj.Body)
 	}
 
-	reader := strings.NewReader(formValues.Encode())
 	req, err := http.NewRequest(reqObj.Method, reqObj.Url, reader)
 	if err != nil {
 		fmt.Printf("new request failed, err:%v\n", err)
 		return
 	}
 
-	if len(reqObj.FormData) > 0 {
-		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	}
-
-	if reqObj.Header != nil {
-		for k, v := range reqObj.Header {
-			req.Header.Add(k, v)
+	if len(reqObj.Header) > 0 {
+		for _, v := range reqObj.Header {
+			temp := strings.SplitN(v, ":", 2)
+			if len(temp) == 2 {
+				req.Header.Add(temp[0], temp[1])
+			} else {
+				fmt.Printf("split header err,value:%+v,split len:%+v", v, len(temp))
+			}
 		}
 	}
 	start := time.Now()

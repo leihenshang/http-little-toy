@@ -12,14 +12,11 @@ var template Template = `
 {
     "url": "http://localhost:9090/shop/create",
     "method": "POST",
-	"header": {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "date": "Sun, 09 Oct 2022 03:00:13 GMT"
-    },
-    "formData": {
-        "userId":"1",
-        "goodsId":"2"
-    }
+    "header": [
+        "Content-Type:application/x-www-form-urlencoded",
+        "date:Sun, 09 Oct 2022 03:00:13 GMT"
+    ],
+    "body": "user_code=127"
 }
 `
 

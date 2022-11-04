@@ -6,10 +6,10 @@ import (
 )
 
 type Request struct {
-	Url      string            `json:"url"`
-	FormData map[string]string `json:"formData"`
-	Method   string            `json:"method"`
-	Header   map[string]string `json:"header"`
+	Url    string   `json:"url"`
+	Body   string   `json:"body"`
+	Method string   `json:"method"`
+	Header []string `json:"header"`
 }
 
 type RequestStats struct {

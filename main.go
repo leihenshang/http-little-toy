@@ -17,6 +17,17 @@ import (
 	"time"
 )
 
+type stringSlice []string
+
+func (s *stringSlice) String() string {
+	return fmt.Sprintf("%v", []string(*s))
+}
+
+func (s *stringSlice) Set(value string) error {
+	*s = append(*s, value)
+	return nil
+}
+
 // 版本
 const Version = "0.0.1"
 
@@ -34,6 +45,12 @@ var version = flag.Bool("v", false, "show app version.")
 // url
 var reqUrl = flag.String("u", "", "The URL you want to test")
 
+// header
+var headers stringSlice
+
+// body
+var body = flag.String("body", "", "The http body")
+
 // 持续时间
 var duration = flag.Int("d", 0, "Duration of request.The unit is seconds.")
 
@@ -47,7 +64,7 @@ var keepAlive = flag.Bool("keepAlive", true, "Use keep-alive for http protocol."
 var compression = flag.Bool("compression", true, "Use keep-alive for http protocol.")
 
 // 请求文件
-var requestFile = flag.String("file", "", "specify the request definition file.")
+var requestFile = flag.String("f", "", "specify the request definition file.")
 
 // 创建请求文件模板
 var generateSample = flag.Bool("gen", false, "generate the request definition file template to the current directory.")
@@ -77,11 +94,14 @@ func printDefault() {
 	fmt.Println("Usage: httpToy <options>")
 	fmt.Println("Options:")
 	flag.VisitAll(func(flag *flag.Flag) {
-		fmt.Println("\t-"+flag.Name, "\t", flag.Usage, "(default:"+flag.DefValue+")")
+		fmt.Println("\t-"+flag.Name, "\t\n\t\t", flag.Usage, "default:"+flag.DefValue)
 	})
 }
 
 func main() {
+
+	flag.Var(&headers, "H", "The http header.")
+
 	// 设置一个信号通道，获取来自终端的终止信号
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt)
@@ -212,6 +232,7 @@ func checkParams() (request model.Request) {
 		log.Fatal("the \"-u\" or \"-f\" parameter can not exist the same time.")
 	}
 
+	// 默认请求文件优先级最高
 	if *requestFile != "" {
 		fileBytes, err := ioutil.ReadFile(*requestFile)
 		if err != nil {
@@ -221,12 +242,25 @@ func checkParams() (request model.Request) {
 		if unmarshalErr != nil {
 			log.Fatal("unmarshal err: ", unmarshalErr)
 		}
-	}
 
-	if *reqUrl != "" {
+	} else {
 		request.Url = *reqUrl
 		request.Method = http.MethodGet
+		request.Body = *body
+		request.Header = headers
 	}
 
+	// fmt.Printf("%+v \n", request)
+	// if len(request.Header) > 0 {
+	// 	for _, v := range request.Header {
+	// 		temp := strings.SplitN(v, ":", 2)
+	// 		if len(temp) == 2 {
+	// 			fmt.Printf("original:%+v, key:%+v,value:%+v \n", temp, temp[0], temp[1])
+	// 		} else {
+	// 			fmt.Printf("split header err,value:%+v,split len:%+v", v, len(temp))
+	// 		}
+	// 	}
+	// }
+	// os.Exit(0)
 	return
 }

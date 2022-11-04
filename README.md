@@ -8,9 +8,9 @@
 
 #### todo
 
-- [ ] 命令行中加入设置 `header` 头
+- [x] 命令行中加入设置 `header` 头
 
-- [ ] 命令行中加入设置 `request` 负载
+- [x] 命令行中加入设置 `body` 负载
 
 #### 使用
 
@@ -20,22 +20,42 @@
 $ go run . -h
 Usage: httpToy <options>
 Options:
-        -allowRedirects          allowRedirects (default:true)
-        -caCert          caCert (default:)
-        -clientCert      clientCert (default:)
-        -clientKey       clientKey (default:)
-        -compression     Use keep-alive for http protocol. (default:true)
-        -d       Duration of request.The unit is seconds. (default:0)
-        -file    specify the request definition file. (default:)
-        -gen     generate the request definition file template to the current directory. (default:false)
-        -h       show help tips (default:false)
-        -keepAlive       Use keep-alive for http protocol. (default:true)
-        -skipVerify      TLS skipVerify (default:false)
-        -t       Number of threads. (default:0)
-        -timeOut         the time out to wait response (default:1000)
-        -u       The URL you want to test (default:)
-        -useHttp2        useHttp2 (default:false)
-        -v       show app version. (default:false)
+        -H 
+                 The http header. default:[]
+        -allowRedirects 
+                 allowRedirects default:true
+        -body 
+                 The http body default:
+        -caCert 
+                 caCert default:
+        -clientCert 
+                 clientCert default:
+        -clientKey 
+                 clientKey default:
+        -compression 
+                 Use keep-alive for http protocol. default:true
+        -d 
+                 Duration of request.The unit is seconds. default:0
+        -f 
+                 specify the request definition file. default:
+        -gen 
+                 generate the request definition file template to the current directory. default:false
+        -h 
+                 show help tips default:false
+        -keepAlive 
+                 Use keep-alive for http protocol. default:true
+        -skipVerify 
+                 TLS skipVerify default:false
+        -t 
+                 Number of threads. default:0
+        -timeOut 
+                 the time out to wait response default:1000
+        -u 
+                 The URL you want to test default:
+        -useHttp2 
+                 useHttp2 default:false
+        -v 
+                 show app version. default:false
 
 ```
 
@@ -61,4 +81,9 @@ go build -o httpToy
 # 使用请求文件
 ./httpToy -d 10 -t 80 -f request_sample.json
 
+```
+
+```bash
+# 其他
+go run . -u http://127.0.0.1:2021 -H "aaa:bbb" -H "cccc:dddd" -body "datatatat" -d 2 -t 1
 ```
