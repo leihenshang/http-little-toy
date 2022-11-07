@@ -1,4 +1,4 @@
-module leihenshang/http-little-toy
+module github.com/leihenshang/http-little-toy
 
 go 1.18
 

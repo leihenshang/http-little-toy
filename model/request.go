@@ -1,8 +1,9 @@
 package model
 
 import (
-	httputil "leihenshang/http-little-toy/common/utils/http-util"
 	"time"
+
+	httputil "github.com/leihenshang/http-little-toy/common/utils/http-util"
 )
 
 type Request struct {

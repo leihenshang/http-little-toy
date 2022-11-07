@@ -8,11 +8,12 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	httputil "leihenshang/http-little-toy/common/utils/http-util"
-	"leihenshang/http-little-toy/model"
 	"net/http"
 	"strings"
 	"time"
+
+	httputil "github.com/leihenshang/http-little-toy/common/utils/http-util"
+	"github.com/leihenshang/http-little-toy/model"
 
 	"golang.org/x/net/http2"
 )
