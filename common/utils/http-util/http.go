@@ -3,9 +3,9 @@ package http_util
 import (
 	"errors"
 	"fmt"
+	checkutil "leihenshang/http-little-toy/common/utils/check-util"
 	"net/http"
 	"net/url"
-	checkutil "tangzq/http-little-toy/common/utils/check-util"
 )
 
 func GetHttpMethods() []string {

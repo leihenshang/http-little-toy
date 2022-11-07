@@ -1,7 +1,7 @@
 package model
 
 import (
-	httputil "tangzq/http-little-toy/common/utils/http-util"
+	httputil "leihenshang/http-little-toy/common/utils/http-util"
 	"time"
 )
 
