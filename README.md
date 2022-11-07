@@ -84,6 +84,6 @@ go build -o httpToy
 ```
 
 ```bash
-# 其他
-go run . -u http://127.0.0.1:2021 -H "aaa:bbb" -H "cccc:dddd" -body "datatatat" -d 2 -t 1
+# 使用test-server
+ go run . -u http://localhost:9090 -H aaa:bbbb -H ccc:ddd -body "hhhhh2333333" -d 2 -t 1
 ```
