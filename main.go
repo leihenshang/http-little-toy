@@ -29,7 +29,7 @@ func (s *stringSlice) Set(value string) error {
 }
 
 // 版本
-const Version = "0.0.1"
+const Version = "0.0.2"
 
 // 请求代理名称
 const Agent = "http-little-toy"
