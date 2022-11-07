@@ -147,6 +147,7 @@ func main() {
 
 	fmt.Printf("use %d coroutines,duration %d seconds.\n", *thread, *duration)
 	fmt.Printf("url: %v method:%v header: %v \n", request.Url, request.Method, request.Header)
+	fmt.Println("---------------stats---------------")
 
 	// 使用该通道来存储请求的结果,并启用一个协程来读取该通道的结果
 	respChan = make(chan model.RequestStats, *thread)
@@ -219,11 +220,10 @@ func main() {
 	averageRequestTime := allAggregate.Duration / time.Duration(allAggregate.SuccessNum)
 	perSecondTimes := float64(allAggregate.SuccessNum) / averageThreadDuration.Seconds()
 	byteRate := float64(allAggregate.RespSize) / averageThreadDuration.Seconds()
-	fmt.Printf("一共 %v 个请求,读取: %v KB \n", allAggregate.SuccessNum, allAggregate.RespSize/1024)
-	fmt.Printf("requests/sec %.2f , Transfer/sec %.2f KB, average request time: %v \n", perSecondTimes, byteRate/1024, averageRequestTime)
-	fmt.Printf("最慢的请求:%v \n", allAggregate.MaxReqTime)
-	fmt.Printf("最快的请求:%v \n", allAggregate.MinReqTime)
-	fmt.Printf("错误的请求数量：%v \n", allAggregate.ErrNum)
+	fmt.Printf("number of success: %v ,number of failed: %v,read: %v KB \n", allAggregate.SuccessNum, allAggregate.ErrNum, allAggregate.RespSize/1024)
+	fmt.Printf("requests/sec %.2f , transfer/sec %.2f KB, average request time: %v \n", perSecondTimes, byteRate/1024, averageRequestTime)
+	fmt.Printf("the slowest request:%v \n", allAggregate.MaxReqTime)
+	fmt.Printf("the fastest request:%v \n", allAggregate.MinReqTime)
 }
 
 func checkParams() (request model.Request) {
