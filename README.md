@@ -1,10 +1,11 @@
 # http-little-toy
 
+一个简单的 `http` 并发测试工具。
 #### 介绍
 
-一个 `http` 并发测试工具。
+灵感来源于 `github` 上各种版本的 `wrk` http并发测试工具，有一天看了一个go写的版本，就这？我也能行。于是自己也造一个轮子。
 
-灵感来自于 github 上的各种叫做wrk的工具，自己也造一个轮子。
+造轮子真好玩啊。就叫它`小玩具`吧。
 
 #### todo
 
@@ -21,41 +22,41 @@ $ go run . -h
 Usage: httpToy <options>
 Options:
         -H 
-                 The http header. default:[]
+                 The http header. --default=[].
         -allowRedirects 
-                 allowRedirects default:true
+                 allowRedirects --default=true.
         -body 
-                 The http body default:
+                 The http body --default="".
         -caCert 
-                 caCert default:
+                 caCert --default="".
         -clientCert 
-                 clientCert default:
+                 clientCert --default="".
         -clientKey 
-                 clientKey default:
+                 clientKey --default="".
         -compression 
-                 Use keep-alive for http protocol. default:true
+                 Use keep-alive for http protocol. --default=true.
         -d 
-                 Duration of request.The unit is seconds. default:0
+                 Duration of request.The unit is seconds. --default=0.
         -f 
-                 specify the request definition file. default:
+                 specify the request definition file. --default="".
         -gen 
-                 generate the request definition file template to the current directory. default:false
+                 generate the request definition file template to the current directory. --default=false.
         -h 
-                 show help tips default:false
+                 show help tips --default=false.
         -keepAlive 
-                 Use keep-alive for http protocol. default:true
+                 Use keep-alive for http protocol. --default=true.
         -skipVerify 
-                 TLS skipVerify default:false
+                 TLS skipVerify --default=false.
         -t 
-                 Number of threads. default:0
+                 Number of threads. --default=0.
         -timeOut 
-                 the time out to wait response default:1000
+                 the time out to wait response --default=1000.
         -u 
-                 The URL you want to test default:
+                 The URL you want to test --default="".
         -useHttp2 
-                 useHttp2 default:false
+                 useHttp2 --default=false.
         -v 
-                 show app version. default:false
+                 show app version. --default=false.
 
 ```
 

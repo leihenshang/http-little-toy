@@ -94,7 +94,13 @@ func printDefault() {
 	fmt.Println("Usage: httpToy <options>")
 	fmt.Println("Options:")
 	flag.VisitAll(func(flag *flag.Flag) {
-		fmt.Println("\t-"+flag.Name, "\t\n\t\t", flag.Usage, "default:"+flag.DefValue)
+		fmt.Println("\t-"+flag.Name, "\t\n\t\t", flag.Usage, "--default="+func() string {
+			if flag.DefValue == "" {
+				return "\"\""
+			}
+
+			return flag.DefValue
+		}()+".")
 	})
 }
 
