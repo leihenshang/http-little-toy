@@ -2,7 +2,8 @@ package check_util
 
 import (
 	"errors"
-	"net"
+    "fmt"
+    "net"
 	"time"
 )
 
@@ -12,11 +13,11 @@ func ConnectivityTest(ipPorts string) (err error) {
 		return netErr
 	}
 	if netRes == nil {
-		return errors.New("the %s is disabled.")
+        return errors.New(fmt.Sprintf("the %s is disabled.",ipPorts))
 	}
 
 	if netRes != nil {
-		netRes.Close()
+		_ = netRes.Close()
 		return nil
 	}
 
