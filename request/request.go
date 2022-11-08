@@ -33,7 +33,7 @@ func GetHttpClient(
 	disableCompression := !compression
 
 	client.Transport = &http.Transport{
-		ResponseHeaderTimeout: time.Millisecond * time.Duration(timeout),
+		ResponseHeaderTimeout: time.Millisecond * timeout,
 		DisableCompression:    disableCompression,
 		DisableKeepAlives:     disableKeepAlive,
 		TLSClientConfig:       &tls.Config{InsecureSkipVerify: skipVerify},
@@ -59,13 +59,13 @@ func GetHttpClient(
 	}
 	cert, err := tls.LoadX509KeyPair(clientCert, clientKey)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to load cert tried to load %v and %v but got %v", clientCert, clientKey, err)
+		return nil, fmt.Errorf("unable to load cert tried to load %v and %v but got %v", clientCert, clientKey, err)
 	}
 
 	// Load our CA certificate
 	clientCACert, err := ioutil.ReadFile(caCert)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to open cert %v", err)
+		return nil, fmt.Errorf("unable to open cert %v", err)
 	}
 
 	clientCertPool := x509.NewCertPool()
@@ -83,7 +83,10 @@ func GetHttpClient(
 	}
 
 	if useHttp2 {
-		http2.ConfigureTransport(t)
+		http2Err := http2.ConfigureTransport(t)
+        if http2Err != nil {
+            return nil, http2Err
+        }
 	}
 	client.Transport = t
 	return client, nil
@@ -122,7 +125,7 @@ func HandleReq(_ context.Context, client *http.Client, reqObj model.Request) (re
 
 	defer func() {
 		if resp != nil && resp.Body != nil {
-			resp.Body.Close()
+			_ = resp.Body.Close()
 		}
 
 	}()
