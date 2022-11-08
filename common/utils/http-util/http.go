@@ -56,7 +56,7 @@ func CheckUrlAddr(urlAddr string) (err error) {
 
 	urlObj, urlErr := url.Parse(urlAddr)
 	if urlErr != nil {
-		return errors.New("An error occurred while parsing the url")
+		return errors.New("an error occurred while parsing the url")
 	}
 
 	if urlObj.Scheme != "http" && urlObj.Scheme != "https" {
