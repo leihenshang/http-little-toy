@@ -84,15 +84,15 @@ func GetHttpClient(
 
 	if useHttp2 {
 		http2Err := http2.ConfigureTransport(t)
-        if http2Err != nil {
-            return nil, http2Err
-        }
+		if http2Err != nil {
+			return nil, http2Err
+		}
 	}
 	client.Transport = t
 	return client, nil
 }
 
-func HandleReq(_ context.Context, client *http.Client, reqObj model.Request) (respSize int, duration time.Duration, err error) {
+func HandleReq(_ context.Context, client *http.Client, reqObj model.Request) (respSize int, duration time.Duration, rawBody []byte, err error) {
 	respSize = -1
 	duration = -1
 
@@ -139,15 +139,19 @@ func HandleReq(_ context.Context, client *http.Client, reqObj model.Request) (re
 		headerSize = int(httputil.CalculateHttpHeadersSize(resp.Header))
 	}
 
+	//持续时间
+	duration = time.Since(start)
+
 	if resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusCreated {
-		duration = time.Since(start)
 		respSize = len(body) + headerSize
 	} else if resp.StatusCode == http.StatusMovedPermanently || resp.StatusCode == http.StatusTemporaryRedirect {
-		duration = time.Since(start)
 		respSize = int(resp.ContentLength) + headerSize
 	} else {
-		fmt.Println("received status code", resp.StatusCode, "header", resp.Header, "content", string(body))
+		fmt.Println("received status code", resp.StatusCode, "header", resp.Header, "content", string(rawBody))
 	}
+
+	//保存原始数据
+	rawBody = body
 
 	return
 }

@@ -4,4 +4,10 @@
 # complied the product
 httpToy
 
+# log 
+log
+
+# visual studio code 
+.vscode
+
 

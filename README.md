@@ -16,7 +16,7 @@
 
 - [ ] 完善一下 `request.json` 请求文件的逻辑
 
-- [ ] 添加记录响应数据日志的功能，方便分析
+- [x] 添加记录响应数据日志的功能，方便分析
 
 #### 使用
 
@@ -25,21 +25,21 @@
 还能使用request.json文件，你不用重新编写命令参数了,不过可能还有点小问题，在完善中。
 
 ```bash
-$ go run . -h
+$ http-little-toy -h
 Usage: httpToy <options>
 Options:
         -H 
                  The http header. --default=[].
         -allowRedirects 
-                 allowRedirects --default=true.
+                 allowRedirects. --default=true.
         -body 
-                 The http body --default="".
+                 The http body. --default="".
         -caCert 
-                 caCert --default="".
+                 caCert. --default="".
         -clientCert 
-                 clientCert --default="".
+                 clientCert. --default="".
         -clientKey 
-                 clientKey --default="".
+                 clientKey. --default="".
         -compression 
                  Use keep-alive for http protocol. --default=true.
         -d 
@@ -49,19 +49,21 @@ Options:
         -gen 
                  generate the request definition file template to the current directory. --default=false.
         -h 
-                 show help tips --default=false.
+                 show help tips. --default=false.
         -keepAlive 
                  Use keep-alive for http protocol. --default=true.
+        -log 
+                 record request log to file. default: './log' --default=false.
         -skipVerify 
-                 TLS skipVerify --default=false.
+                 TLS skipVerify. --default=false.
         -t 
                  Number of threads. --default=0.
         -timeOut 
-                 the time out to wait response --default=1000.
+                 the time out to wait response. --default=1000.
         -u 
-                 The URL you want to test --default="".
+                 The URL you want to test. --default="".
         -useHttp2 
-                 useHttp2 --default=false.
+                 useHttp2. --default=false.
         -v 
                  show app version. --default=false.
 
@@ -74,7 +76,6 @@ Options:
 2. 手动编译成二进制文件直接运行，可以放到全局变量中直接从命令行中执行。
 
 #### 手动编译
-
 
 ```bash
 # 把项目编译成可执行文件并输出到当前目录

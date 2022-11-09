@@ -26,8 +26,11 @@ func main() {
 		bodyBytes, _ := ioutil.ReadAll(body)
 
 		w.Write([]byte("welcome to shop! \n"))
-		fmt.Println("header:" + string(hBytes))
-		fmt.Println("body:" + string(bodyBytes))
+		fmt.Println("header:" + string(hBytes) + "\n")
+		w.Write([]byte("header:" + string(hBytes) + "\n"))
+		fmt.Println("body:" + string(bodyBytes) + "\n")
+		w.Write([]byte("body:" + string(bodyBytes) + "\n"))
+
 	})
 
 	log.Printf("start success! listen address is %+v", *listenAddr)

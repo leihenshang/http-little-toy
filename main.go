@@ -10,8 +10,10 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"time"
 
+	myLog "github.com/leihenshang/http-little-toy/common/mylog"
 	timeUtil "github.com/leihenshang/http-little-toy/common/utils/time-util"
 	"github.com/leihenshang/http-little-toy/model"
 	reqObj "github.com/leihenshang/http-little-toy/request"
@@ -35,22 +37,30 @@ const Version = "0.0.2"
 // 请求代理名称
 const Agent = "http-little-toy"
 
+// 日志目录
+const LogDir = "log"
+
+var logChan chan []byte
+
 var respChan chan model.RequestStats
 
 // 帮助
-var helpTips = flag.Bool("h", false, "show help tips")
+var helpTips = flag.Bool("h", false, "show help tips.")
 
 // 版本打印
 var version = flag.Bool("v", false, "show app version.")
 
 // url
-var reqUrl = flag.String("u", "", "The URL you want to test")
+var reqUrl = flag.String("u", "", "The URL you want to test.")
 
 // header
 var headers stringSlice
 
 // body
-var body = flag.String("body", "", "The http body")
+var body = flag.String("body", "", "The http body.")
+
+// 日志文件
+var logFile = flag.Bool("log", false, "record request log to file. default: './log'")
 
 // 持续时间
 var duration = flag.Int("d", 0, "Duration of request.The unit is seconds.")
@@ -71,25 +81,25 @@ var requestFile = flag.String("f", "", "specify the request definition file.")
 var generateSample = flag.Bool("gen", false, "generate the request definition file template to the current directory.")
 
 // 等待响应超时时间
-var timeOut = flag.Uint("timeOut", 1000, "the time out to wait response")
+var timeOut = flag.Uint("timeOut", 1000, "the time out to wait response.")
 
 // 跳过TLS验证
-var skipVerify = flag.Bool("skipVerify", false, "TLS skipVerify")
+var skipVerify = flag.Bool("skipVerify", false, "TLS skipVerify.")
 
 // 允许重定向
-var allowRedirects = flag.Bool("allowRedirects", true, "allowRedirects")
+var allowRedirects = flag.Bool("allowRedirects", true, "allowRedirects.")
 
 // 使用http2
-var useHttp2 = flag.Bool("useHttp2", false, "useHttp2")
+var useHttp2 = flag.Bool("useHttp2", false, "useHttp2.")
 
 // 客户端证书
-var clientCert = flag.String("clientCert", "", "clientCert")
+var clientCert = flag.String("clientCert", "", "clientCert.")
 
 // 客户端秘钥
-var clientKey = flag.String("clientKey", "", "clientKey")
+var clientKey = flag.String("clientKey", "", "clientKey.")
 
 // ca证书
-var caCert = flag.String("caCert", "", "caCert")
+var caCert = flag.String("caCert", "", "caCert.")
 
 func printDefault() {
 	fmt.Println("Usage: httpToy <options>")
@@ -137,6 +147,39 @@ func main() {
 		return
 	}
 
+	logCtx, logCancel := context.WithCancel(context.TODO())
+	defer logCancel()
+	if *logFile {
+		logChan = make(chan []byte, *thread)
+		logFile, logErr := myLog.GenLog(LogDir)
+		if logErr != nil {
+			log.Fatalf("an error occurred while get log file.err:%+v\n", logErr)
+		}
+
+		// 启动一个协程来处理日志写入
+		go func(c context.Context) {
+		LOOP:
+			for {
+				select {
+				case l := <-logChan:
+					logData := []byte(time.Now().Format("2006-01-02 15:04:05 "))
+					logData = append(logData, l...)
+					logData = append(logData, []byte("\n")...)
+					_, lErr := logFile.Write(logData)
+					if lErr != nil {
+						log.Printf("write log err:%+v\n", lErr)
+					}
+				case <-c.Done():
+					break LOOP
+				}
+
+			}
+			// 关闭日志文件
+			logFile.Close()
+		}(logCtx)
+
+	}
+
 	// 检查参数并使用 flag.Parse 解析命令行输入
 	request := checkParams()
 
@@ -177,15 +220,21 @@ func main() {
 			aggregate := model.RequestStats{MinReqTime: time.Hour}
 		LOOP:
 			for {
-				size, d, err := reqObj.HandleReq(httpCtx, client, request)
+				size, d, rawBody, err := reqObj.HandleReq(httpCtx, client, request)
 				if size > 0 && err == nil {
 					aggregate.Duration += d
 					aggregate.SuccessNum++
 					aggregate.MaxReqTime = timeUtil.MaxTime(aggregate.MaxReqTime, d)
 					aggregate.MinReqTime = timeUtil.MinTime(aggregate.MinReqTime, d)
 					aggregate.RespSize += int64(size)
+
+					if *logFile {
+						//写入日志通道
+						logChan <- rawBody
+					}
+
 				} else {
-					fmt.Println(err)
+					log.Printf("request err:%+v\n", err)
 					aggregate.ErrNum++
 				}
 
@@ -214,6 +263,8 @@ func main() {
 			respNum++
 		case <-sigChan:
 			cancel()
+			// 日志协程退出
+			logCancel()
 		}
 	}
 
@@ -225,6 +276,12 @@ func main() {
 	fmt.Printf("requests/sec %.2f , transfer/sec %.2f KB, average request time: %v \n", perSecondTimes, byteRate/1024, averageRequestTime)
 	fmt.Printf("the slowest request:%v \n", allAggregate.MaxReqTime)
 	fmt.Printf("the fastest request:%v \n", allAggregate.MinReqTime)
+
+	// TODO 不优雅的解决一下日志没写完的问题
+	time.Sleep(2)
+	logCancel()
+	d, _ := filepath.Abs(LogDir)
+	log.Printf("log in:%+v \n", d)
 }
 
 func checkParams() (request model.Request) {
