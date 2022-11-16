@@ -277,7 +277,7 @@ func main() {
 	fmt.Printf("the slowest request:%v \n", allAggregate.MaxReqTime)
 	fmt.Printf("the fastest request:%v \n", allAggregate.MinReqTime)
 
-	// TODO 不优雅的解决一下日志没写完的问题
+	// FIXME 不优雅的解决一下日志没写完的问题
 	time.Sleep(2)
 	logCancel()
 	d, _ := filepath.Abs(LogDir)
