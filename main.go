@@ -21,18 +21,27 @@ import (
 	"github.com/leihenshang/http-little-toy/sample"
 )
 
-// 版本
-const Version = "0.0.2"
+// ----基本设置----
+const (
+	// 版本
+	Version = "0.0.2"
 
-// 请求代理名称
-const Agent = "http-little-toy"
+	// 请求代理名称
+	AppName = "http-little-toy"
 
-// 日志目录
-const LogDir = "log"
+	// 日志目录
+	LogDir = "log"
+)
 
-var logChan chan []byte
+// ----数据交换----
+var (
+	// 日志通道
+	logChan chan []byte
+	// 记录响应数据
+	respChan chan model.RequestStats
+)
 
-var respChan chan model.RequestStats
+var (
 
 // 帮助
 var helpTips = flag.Bool("h", false, "show help tips.")
@@ -91,8 +100,14 @@ var clientKey = flag.String("clientKey", "", "clientKey.")
 // ca证书
 var caCert = flag.String("caCert", "", "caCert.")
 
+func init() {
+	flag.Var(&headers, "H", "The http header.")
+}
+
+
+//printDefault 打印默认操作
 func printDefault() {
-	fmt.Println("Usage: httpToy <options>")
+	fmt.Printf("Usage: %s <options>", AppName)
 	fmt.Println("Options:")
 	flag.VisitAll(func(flag *flag.Flag) {
 		fmt.Println("\t-"+flag.Name, "\t\n\t\t", flag.Usage, "--default="+func() string {
@@ -105,15 +120,14 @@ func printDefault() {
 	})
 }
 
-func main() {
 
-	flag.Var(&headers, "H", "The http header.")
+func main() {
+	// 解析所有标志
+	flag.Parse()
 
 	// 设置一个信号通道，获取来自终端的终止信号
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt)
-
-	flag.Parse()
 
 	// 打印帮助
 	if *helpTips == true {
