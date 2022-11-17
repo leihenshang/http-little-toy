@@ -1,4 +1,4 @@
-package check_util
+package net_util
 
 import (
 	"errors"

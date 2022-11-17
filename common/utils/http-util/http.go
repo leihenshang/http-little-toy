@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"net/url"
 
-	checkutil "github.com/leihenshang/http-little-toy/common/utils/check-util"
+	checkutil "github.com/leihenshang/http-little-toy/common/utils/net_util"
 )
 
 func GetHttpMethods() []string {
