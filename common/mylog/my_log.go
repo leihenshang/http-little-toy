@@ -11,7 +11,7 @@ import (
 	fileUtil "github.com/leihenshang/http-little-toy/common/utils/file-util"
 )
 
-func GenLog(LogDir string) (f *os.File, err error) {
+func CreateLog(LogDir string) (f *os.File, err error) {
 	logDir, logDirErr := fileUtil.IsExisted(LogDir)
 	if logDirErr != nil {
 		err = errors.New(fmt.Sprintf("an error occurred while get log directory information. err:%+v \n", logDirErr))

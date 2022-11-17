@@ -141,7 +141,7 @@ func main() {
 	defer logCancel()
 	if *logFile {
 		logChan = make(chan []byte, *thread)
-		logFile, logErr := myLog.GenLog(LogDir)
+		logFile, logErr := myLog.CreateLog(LogDir)
 		if logErr != nil {
 			log.Fatalf("an error occurred while get log file.err:%+v\n", logErr)
 		}
