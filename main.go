@@ -15,21 +15,11 @@ import (
 
 	myLog "github.com/leihenshang/http-little-toy/common/mylog"
 	timeUtil "github.com/leihenshang/http-little-toy/common/utils/time-util"
+	"github.com/leihenshang/http-little-toy/common/xtype"
 	"github.com/leihenshang/http-little-toy/model"
 	reqObj "github.com/leihenshang/http-little-toy/request"
 	"github.com/leihenshang/http-little-toy/sample"
 )
-
-type stringSlice []string
-
-func (s *stringSlice) String() string {
-	return fmt.Sprintf("%v", []string(*s))
-}
-
-func (s *stringSlice) Set(value string) error {
-	*s = append(*s, value)
-	return nil
-}
 
 // 版本
 const Version = "0.0.2"
@@ -54,7 +44,7 @@ var version = flag.Bool("v", false, "show app version.")
 var reqUrl = flag.String("u", "", "The URL you want to test.")
 
 // header
-var headers stringSlice
+var headers xtype.StringSliceX
 
 // body
 var body = flag.String("body", "", "The http body.")
