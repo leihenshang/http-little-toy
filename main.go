@@ -41,8 +41,6 @@ var (
 	respChan chan model.RequestStats
 )
 
-var (
-
 // 帮助
 var helpTips = flag.Bool("h", false, "show help tips.")
 
@@ -104,7 +102,6 @@ func init() {
 	flag.Var(&headers, "H", "The http header.")
 }
 
-
 //printDefault 打印默认操作
 func printDefault() {
 	fmt.Printf("Usage: %s <options>", AppName)
@@ -119,7 +116,6 @@ func printDefault() {
 		}()+".")
 	})
 }
-
 
 func main() {
 	// 解析所有标志
