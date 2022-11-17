@@ -2,12 +2,20 @@
 
 一个简单的 `http` 并发测试工具。
 
+#### 仓库地址
+
+如果喜欢就star⭐️一下吧，让它沉睡在你的收藏库里。
+
+ [https://github.com/leihenshang/http-little-toy](https://github.com/leihenshang/http-little-toy) 
+
+ [https://gitee.com/leihenshang/http-little-toy](https://gitee.com/leihenshang/http-little-toy) 
+
 #### 介绍
 
-灵感来源于 `github` 上各种版本的 `wrk` http并发测试工具，有一天看了一个go写的版本，就这？我也能行啊。于是自己也造一个轮子。orz.
+灵感来源于 `github` 上各种版本的 `wrk` http并发测试工具，有一天看了一个go写的版本，就这？我也能行啊。我自己也造一个轮子吧。orz.
 
-造轮子真好玩啊。
-
+造轮子好玩吗？
+真好玩！
 #### todo
 
 - [x] 命令行中加入设置 `header` 头
