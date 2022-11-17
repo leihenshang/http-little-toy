@@ -60,10 +60,10 @@ var body = flag.String("body", "", "The http body.")
 var logFile = flag.Bool("log", false, "record request log to file. default: './log'")
 
 // 持续时间
-var duration = flag.Int("d", 0, "Duration of request.The unit is seconds.")
+var duration = flag.Int("d", 10, "Duration of request.The unit is seconds.")
 
 // 线程数
-var thread = flag.Int("t", 0, "Number of threads.")
+var thread = flag.Int("t", 10, "Number of threads.")
 
 // 启用keep alive
 var keepAlive = flag.Bool("keepAlive", true, "Use keep-alive for http protocol.")
@@ -285,9 +285,6 @@ func main() {
 }
 
 func checkParams() (request model.Request) {
-	if *duration == 0 || *thread == 0 {
-		log.Fatal("params is error.Use \"-d\" and \"-t\" parameter add the set.")
-	}
 	if *requestFile == "" && *reqUrl == "" {
 		log.Fatal("the URL cannot be empty.Use the \"-u\" or \"-f\" parameter to set the URL.")
 	}
