@@ -24,7 +24,7 @@ import (
 // ----基本设置----
 const (
 	// 版本
-	Version = "0.0.2"
+	Version = "0.0.3"
 
 	// 请求代理名称
 	AppName = "http-little-toy"
