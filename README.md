@@ -2,6 +2,12 @@
 
 一个简单的 `http` 并发测试工具。
 
+## README
+
+[English ⭐️README.MD⭐️](README.en.md)
+
+
+## 说明
 #### 仓库地址
 
 如果喜欢就star⭐️一下吧，让它沉睡在你的收藏库里。
