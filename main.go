@@ -268,10 +268,23 @@ func main() {
 		}
 	}
 
-	averageThreadDuration := allAggregate.Duration / time.Duration(respNum)
-	averageRequestTime := allAggregate.Duration / time.Duration(allAggregate.SuccessNum)
+	averageThreadDuration := func() time.Duration {
+		if time.Duration(respNum) <= 0 {
+			return 0
+		}
+		return allAggregate.Duration / time.Duration(respNum)
+
+	}()
+	averageRequestTime := func() time.Duration{
+		if time.Duration(allAggregate.SuccessNum) <= 0 {
+			return 0
+		}
+
+		return allAggregate.Duration / time.Duration(allAggregate.SuccessNum)
+	}() 
 	perSecondTimes := float64(allAggregate.SuccessNum) / averageThreadDuration.Seconds()
 	byteRate := float64(allAggregate.RespSize) / averageThreadDuration.Seconds()
+
 	fmt.Printf("number of success: %v ,number of failed: %v,read: %v KB \n", allAggregate.SuccessNum, allAggregate.ErrNum, allAggregate.RespSize/1024)
 	fmt.Printf("requests/sec %.2f , transfer/sec %.2f KB, average request time: %v \n", perSecondTimes, byteRate/1024, averageRequestTime)
 	fmt.Printf("the slowest request:%v \n", allAggregate.MaxReqTime)
