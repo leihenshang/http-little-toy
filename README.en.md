@@ -17,13 +17,13 @@ That was fun!
 
 #### todo
 
-- [x] 命令行中加入设置 `header` 头
+- [x] Command line directives support setting `http header`
 
-- [x] 命令行中加入设置 `body` 负载
+- [x] Command line directives support setting `http body`
 
-- [ ] 完善一下 `request.json` 请求文件的逻辑
+- [ ] Prefect the `request.json` sample file
 
-- [x] 添加记录响应数据日志的功能，方便分析
+- [x] Adding a response log
 
 #### instructions
 
