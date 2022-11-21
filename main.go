@@ -290,11 +290,14 @@ func main() {
 	fmt.Printf("the slowest request:%v \n", allAggregate.MaxReqTime)
 	fmt.Printf("the fastest request:%v \n", allAggregate.MinReqTime)
 
-	// FIXME 不优雅的解决一下日志没写完的问题
-	time.Sleep(2)
-	logCancel()
-	d, _ := filepath.Abs(LogDir)
-	log.Printf("log in:%+v \n", d)
+	if *logFile {
+		// FIXME 不优雅的解决一下日志没写完的问题
+		time.Sleep(2)
+		logCancel()
+		d, _ := filepath.Abs(LogDir)
+		log.Printf("log in:%+v \n", d)
+	}
+
 }
 
 func checkParams() (request model.Request) {
