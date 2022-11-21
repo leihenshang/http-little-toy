@@ -147,7 +147,7 @@ func HandleReq(_ context.Context, client *http.Client, reqObj model.Request) (re
 	} else if resp.StatusCode == http.StatusMovedPermanently || resp.StatusCode == http.StatusTemporaryRedirect {
 		respSize = int(resp.ContentLength) + headerSize
 	} else {
-		fmt.Println("received status code", resp.StatusCode, "header", resp.Header, "content", string(rawBody))
+		err = errors.New(fmt.Sprint("received status code", resp.StatusCode, "header", resp.Header, "content", string(rawBody)))
 	}
 
 	//保存原始数据
