@@ -57,7 +57,7 @@ var headers xtype.StringSliceX
 var body = flag.String("body", "", "The http body.")
 
 // 日志文件
-var logFile = flag.Bool("log", false, "record request log to file. default: './log'")
+var logFile = flag.Bool("log", false, "Log the request response to file. default: './log'")
 
 // 持续时间
 var duration = flag.Int("d", 10, "Duration of request.The unit is seconds.")
@@ -275,13 +275,13 @@ func main() {
 		return allAggregate.Duration / time.Duration(respNum)
 
 	}()
-	averageRequestTime := func() time.Duration{
+	averageRequestTime := func() time.Duration {
 		if time.Duration(allAggregate.SuccessNum) <= 0 {
 			return 0
 		}
 
 		return allAggregate.Duration / time.Duration(allAggregate.SuccessNum)
-	}() 
+	}()
 	perSecondTimes := float64(allAggregate.SuccessNum) / averageThreadDuration.Seconds()
 	byteRate := float64(allAggregate.RespSize) / averageThreadDuration.Seconds()
 
