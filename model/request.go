@@ -20,6 +20,7 @@ type RequestStats struct {
 	MaxReqTime time.Duration
 	ErrNum     int
 	SuccessNum int
+	RespNum    int
 }
 
 func (r Request) Valid() (err error) {

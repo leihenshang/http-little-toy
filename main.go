@@ -249,9 +249,8 @@ func main() {
 		}()
 	}
 
-	respNum := 0
 	allAggregate := model.RequestStats{MinReqTime: time.Hour}
-	for respNum < *thread {
+	for allAggregate.RespNum < *thread {
 		select {
 		case r := <-respChan:
 			allAggregate.ErrNum += r.ErrNum
@@ -260,7 +259,7 @@ func main() {
 			allAggregate.Duration += r.Duration
 			allAggregate.MinReqTime = timeUtil.MinTime(allAggregate.MinReqTime, r.MinReqTime)
 			allAggregate.MaxReqTime = timeUtil.MaxTime(allAggregate.MaxReqTime, r.MaxReqTime)
-			respNum++
+			allAggregate.RespNum++
 		case <-sigChan:
 			cancel()
 			// 日志协程退出
@@ -268,11 +267,26 @@ func main() {
 		}
 	}
 
+	//打印结果
+	printRes(allAggregate)
+
+	if *logFile {
+		// FIXME 不优雅的解决一下日志没写完的问题
+		time.Sleep(2)
+		logCancel()
+		d, _ := filepath.Abs(LogDir)
+		log.Printf("log in:%+v \n", d)
+	}
+
+}
+
+func printRes(allAggregate model.RequestStats) {
+
 	averageThreadDuration := func() time.Duration {
-		if time.Duration(respNum) <= 0 {
+		if time.Duration(allAggregate.RespNum) <= 0 {
 			return 0
 		}
-		return allAggregate.Duration / time.Duration(respNum)
+		return allAggregate.Duration / time.Duration(allAggregate.RespNum)
 
 	}()
 	averageRequestTime := func() time.Duration {
@@ -289,14 +303,6 @@ func main() {
 	fmt.Printf("requests/sec %.2f , transfer/sec %.2f KB, average request time: %v \n", perSecondTimes, byteRate/1024, averageRequestTime)
 	fmt.Printf("the slowest request:%v \n", allAggregate.MaxReqTime)
 	fmt.Printf("the fastest request:%v \n", allAggregate.MinReqTime)
-
-	if *logFile {
-		// FIXME 不优雅的解决一下日志没写完的问题
-		time.Sleep(2)
-		logCancel()
-		d, _ := filepath.Abs(LogDir)
-		log.Printf("log in:%+v \n", d)
-	}
 
 }
 
