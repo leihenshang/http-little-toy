@@ -133,7 +133,7 @@ func main() {
 
 	// 打印版本
 	if *version == true {
-		fmt.Println("http-little-toy v" + Version)
+		fmt.Printf("%s v%s \n", AppName, Version)
 		return
 	}
 
