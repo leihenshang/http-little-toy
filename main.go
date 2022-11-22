@@ -47,6 +47,8 @@ var helpTips = flag.Bool("h", false, "show help tips.")
 // 版本打印
 var version = flag.Bool("v", false, "show app version.")
 
+
+
 // url
 var reqUrl = flag.String("u", "", "The URL you want to test.")
 
