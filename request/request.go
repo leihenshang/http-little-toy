@@ -13,7 +13,7 @@ import (
 	"time"
 
 	httputil "github.com/leihenshang/http-little-toy/common/utils/http-util"
-	"github.com/leihenshang/http-little-toy/model"
+	"github.com/leihenshang/http-little-toy/data"
 
 	"golang.org/x/net/http2"
 )
@@ -92,7 +92,7 @@ func GetHttpClient(
 	return client, nil
 }
 
-func HandleReq(_ context.Context, client *http.Client, reqObj model.Request) (respSize int, duration time.Duration, rawBody []byte, err error) {
+func HandleReq(_ context.Context, client *http.Client, reqObj data.Request) (respSize int, duration time.Duration, rawBody []byte, err error) {
 	respSize = -1
 	duration = -1
 

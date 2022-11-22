@@ -16,7 +16,7 @@ import (
 	myLog "github.com/leihenshang/http-little-toy/common/mylog"
 	timeUtil "github.com/leihenshang/http-little-toy/common/utils/time-util"
 	"github.com/leihenshang/http-little-toy/common/xtype"
-	"github.com/leihenshang/http-little-toy/model"
+	"github.com/leihenshang/http-little-toy/data"
 	reqObj "github.com/leihenshang/http-little-toy/request"
 	"github.com/leihenshang/http-little-toy/sample"
 )
@@ -38,7 +38,7 @@ var (
 	// 日志通道
 	logChan chan []byte
 	// 记录响应数据
-	respChan chan model.RequestStats
+	respChan chan data.RequestStats
 )
 
 // 帮助
@@ -194,7 +194,7 @@ func main() {
 	fmt.Println("---------------stats---------------")
 
 	// 使用该通道来存储请求的结果,并启用一个协程来读取该通道的结果
-	respChan = make(chan model.RequestStats, *thread)
+	respChan = make(chan data.RequestStats, *thread)
 
 	ctx := context.TODO()
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(1e9*(*duration)))
@@ -217,7 +217,7 @@ func main() {
 			if clientErr != nil {
 				log.Fatal(clientErr)
 			}
-			aggregate := model.RequestStats{MinReqTime: time.Hour}
+			aggregate := data.RequestStats{MinReqTime: time.Hour}
 		LOOP:
 			for {
 				size, d, rawBody, err := reqObj.HandleReq(httpCtx, client, request)
@@ -249,7 +249,7 @@ func main() {
 		}()
 	}
 
-	allAggregate := model.RequestStats{MinReqTime: time.Hour}
+	allAggregate := data.RequestStats{MinReqTime: time.Hour}
 	for allAggregate.RespNum < *thread {
 		select {
 		case r := <-respChan:
@@ -280,7 +280,7 @@ func main() {
 
 }
 
-func printRes(allAggregate model.RequestStats) {
+func printRes(allAggregate data.RequestStats) {
 
 	averageThreadDuration := func() time.Duration {
 		if time.Duration(allAggregate.RespNum) <= 0 {
@@ -306,7 +306,7 @@ func printRes(allAggregate model.RequestStats) {
 
 }
 
-func checkParams() (request model.Request) {
+func checkParams() (request data.Request) {
 	if *requestFile == "" && *reqUrl == "" {
 		log.Fatal("the URL cannot be empty.Use the \"-u\" or \"-f\" parameter to set the URL.")
 	}
