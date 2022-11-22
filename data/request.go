@@ -1,7 +1,12 @@
 package data
 
 import (
-	"time"
+	"encoding/json"
+	"errors"
+	"flag"
+	"fmt"
+	"io/ioutil"
+	"log"
 
 	httputil "github.com/leihenshang/http-little-toy/common/utils/http-util"
 	"github.com/leihenshang/http-little-toy/common/xtype"
@@ -18,10 +23,10 @@ type Request struct {
 // Params 请求参数
 type Params struct {
 	// url
-	ReqUrl string `json:"reqUrl"`
+	Url string `json:"url"`
 
 	// header
-	Headers xtype.StringSliceX `json:"headers"`
+	Header xtype.StringSliceX `json:"header"`
 
 	// body
 	Body string `json:"body"`
@@ -30,6 +35,9 @@ type Params struct {
 
 	// 日志文件
 	Log bool `json:"log"`
+
+	// http 方法
+	Method string `json:"method"`
 
 	// 持续时间
 	Duration int `json:"duration"`
@@ -77,18 +85,7 @@ type RequestSample struct {
 	Request      Request
 }
 
-//RequestStats 请求数据统计
-type RequestStats struct {
-	RespSize   int64
-	Duration   time.Duration
-	MinReqTime time.Duration
-	MaxReqTime time.Duration
-	ErrNum     int
-	SuccessNum int
-	RespNum    int
-}
-
-func (r Request) Valid() (err error) {
+func (r *Request) Valid() (err error) {
 	// 检查 url 格式
 	if urlErr := httputil.CheckUrlAddr(r.Url); urlErr != nil {
 		return urlErr
@@ -100,4 +97,63 @@ func (r Request) Valid() (err error) {
 	}
 
 	return
+}
+
+func (r *RequestSample) ParseParams() (reqObj Request, err error) {
+
+	if r.Params.RequestFile == "" && r.Params.Url == "" {
+		err = errors.New("the URL cannot be empty.Use the \"-u\" or \"-f\" parameter to set the URL.")
+		return
+	}
+
+	if r.Params.RequestFile != "" && r.Params.Url != "" {
+		err = errors.New("the \"-u\" or \"-f\" parameter can not exist the same time.")
+		return
+	}
+
+	// 默认请求文件优先级最高
+	if r.Params.RequestFile != "" {
+		log.Printf("ParseParams: use request file: %s \n", r.Params.RequestFile)
+		fileBytes, readErr := ioutil.ReadFile(r.Params.RequestFile)
+		if err != nil {
+			err = errors.New("an error occurred reading the 'request_sample.json' file.err:" + readErr.Error())
+			return
+		}
+		unmarshalErr := json.Unmarshal(fileBytes, &r)
+		if unmarshalErr != nil {
+			err = errors.New("unmarshal err: " + unmarshalErr.Error())
+			return
+		}
+		// 请求文件参数
+
+		reqObj.Url = r.Request.Url
+		reqObj.Method = r.Request.Method
+		reqObj.Body = r.Request.Body
+		reqObj.Header = r.Request.Header
+
+	} else {
+		// 命令行参数
+
+		reqObj.Url = r.Params.Url
+		reqObj.Method = r.Params.Method
+		reqObj.Body = r.Params.Body
+		reqObj.Header = r.Params.Header
+	}
+
+	return
+}
+
+//printDefault 打印默认操作
+func (r *RequestSample) PrintDefault(appName string) {
+	fmt.Printf("Usage: %s <options>", appName)
+	fmt.Println("Options:")
+	flag.VisitAll(func(flag *flag.Flag) {
+		fmt.Println("\t-"+flag.Name, "\t\n\t\t", flag.Usage, "--default="+func() string {
+			if flag.DefValue == "" {
+				return "\"\""
+			}
+
+			return flag.DefValue
+		}()+".")
+	})
 }

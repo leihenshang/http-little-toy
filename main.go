@@ -2,10 +2,8 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -49,8 +47,9 @@ var helpTips = flag.Bool("h", false, "show help tips.")
 var version = flag.Bool("v", false, "show app version.")
 
 func init() {
-	flag.Var(&requestSample.Params.Headers, "H", "The http header.")
-	flag.StringVar(&requestSample.Params.ReqUrl, "u", "", "The URL you want to test.")
+	flag.Var(&requestSample.Params.Header, "H", "The http header.")
+	flag.StringVar(&requestSample.Params.Url, "u", "", "The URL you want to test.")
+	flag.StringVar(&requestSample.Params.Method, "M", http.MethodGet, "The http method.")
 	flag.StringVar(&requestSample.Params.Body, "body", "", "The http body.")
 	flag.BoolVar(&requestSample.Params.Log, "log", false, "Log the request response to file. default: './log'")
 	flag.IntVar(&requestSample.Params.Duration, "d", 10, "Duration of request.The unit is seconds.")
@@ -68,21 +67,6 @@ func init() {
 	flag.StringVar(&requestSample.Params.CaCert, "caCert", "", "caCert.")
 }
 
-//printDefault 打印默认操作
-func printDefault() {
-	fmt.Printf("Usage: %s <options>", AppName)
-	fmt.Println("Options:")
-	flag.VisitAll(func(flag *flag.Flag) {
-		fmt.Println("\t-"+flag.Name, "\t\n\t\t", flag.Usage, "--default="+func() string {
-			if flag.DefValue == "" {
-				return "\"\""
-			}
-
-			return flag.DefValue
-		}()+".")
-	})
-}
-
 func main() {
 	// 解析所有标志
 	flag.Parse()
@@ -93,7 +77,7 @@ func main() {
 
 	// 打印帮助
 	if *helpTips == true {
-		printDefault()
+		requestSample.PrintDefault(AppName)
 		return
 	}
 
@@ -107,10 +91,20 @@ func main() {
 	if requestSample.Params.GenerateSample {
 		err := sample.GenerateRequestFile("./request_sample.json")
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			log.Fatal(err)
 		}
 		return
+	}
+
+	// 检查参数对象
+	request, parseErr := requestSample.ParseParams()
+	if parseErr != nil {
+		log.Fatal(parseErr)
+	}
+	// 请求对象校验
+	validErr := request.Valid()
+	if validErr != nil {
+		log.Fatal(validErr)
 	}
 
 	logCtx, logCancel := context.WithCancel(context.TODO())
@@ -144,15 +138,6 @@ func main() {
 			logFile.Close()
 		}(logCtx)
 
-	}
-
-	// 检查参数并使用 flag.Parse 解析命令行输入
-	request := checkParams()
-
-	// 请求校验
-	validErr := request.Valid()
-	if validErr != nil {
-		log.Fatal(validErr)
 	}
 
 	fmt.Printf("use %d coroutines,duration %d seconds.\n", requestSample.Params.Thread, requestSample.Params.Duration)
@@ -234,7 +219,7 @@ func main() {
 	}
 
 	//打印结果
-	printRes(allAggregate)
+	allAggregate.PrintStats()
 
 	if requestSample.Params.Log {
 		// FIXME 不优雅的解决一下日志没写完的问题
@@ -244,72 +229,4 @@ func main() {
 		log.Printf("log in:%+v \n", d)
 	}
 
-}
-
-func printRes(allAggregate data.RequestStats) {
-
-	averageThreadDuration := func() time.Duration {
-		if time.Duration(allAggregate.RespNum) <= 0 {
-			return 0
-		}
-		return allAggregate.Duration / time.Duration(allAggregate.RespNum)
-
-	}()
-	averageRequestTime := func() time.Duration {
-		if time.Duration(allAggregate.SuccessNum) <= 0 {
-			return 0
-		}
-
-		return allAggregate.Duration / time.Duration(allAggregate.SuccessNum)
-	}()
-	perSecondTimes := float64(allAggregate.SuccessNum) / averageThreadDuration.Seconds()
-	byteRate := float64(allAggregate.RespSize) / averageThreadDuration.Seconds()
-
-	fmt.Printf("number of success: %v ,number of failed: %v,read: %v KB \n", allAggregate.SuccessNum, allAggregate.ErrNum, allAggregate.RespSize/1024)
-	fmt.Printf("requests/sec %.2f , transfer/sec %.2f KB, average request time: %v \n", perSecondTimes, byteRate/1024, averageRequestTime)
-	fmt.Printf("the slowest request:%v \n", allAggregate.MaxReqTime)
-	fmt.Printf("the fastest request:%v \n", allAggregate.MinReqTime)
-
-}
-
-func checkParams() (request data.Request) {
-	if requestSample.Params.RequestFile == "" && requestSample.Params.ReqUrl == "" {
-		log.Fatal("the URL cannot be empty.Use the \"-u\" or \"-f\" parameter to set the URL.")
-	}
-
-	if requestSample.Params.RequestFile != "" && requestSample.Params.ReqUrl != "" {
-		log.Fatal("the \"-u\" or \"-f\" parameter can not exist the same time.")
-	}
-
-	// 默认请求文件优先级最高
-	if requestSample.Params.RequestFile != "" {
-		fileBytes, err := ioutil.ReadFile(requestSample.Params.RequestFile)
-		if err != nil {
-			log.Fatal("an error occurred reading the file", err)
-		}
-		unmarshalErr := json.Unmarshal(fileBytes, &request)
-		if unmarshalErr != nil {
-			log.Fatal("unmarshal err: ", unmarshalErr)
-		}
-
-	} else {
-		request.Url = requestSample.Params.ReqUrl
-		request.Method = http.MethodGet
-		request.Body = requestSample.Params.Body
-		request.Header = requestSample.Params.Headers
-	}
-
-	// fmt.Printf("%+v \n", request)
-	// if len(request.Header) > 0 {
-	// 	for _, v := range request.Header {
-	// 		temp := strings.SplitN(v, ":", 2)
-	// 		if len(temp) == 2 {
-	// 			fmt.Printf("original:%+v, key:%+v,value:%+v \n", temp, temp[0], temp[1])
-	// 		} else {
-	// 			fmt.Printf("split header err,value:%+v,split len:%+v", v, len(temp))
-	// 		}
-	// 	}
-	// }
-	// os.Exit(0)
-	return
 }
