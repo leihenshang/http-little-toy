@@ -15,7 +15,6 @@ import (
 
 	myLog "github.com/leihenshang/http-little-toy/common/mylog"
 	timeUtil "github.com/leihenshang/http-little-toy/common/utils/time-util"
-	"github.com/leihenshang/http-little-toy/common/xtype"
 	"github.com/leihenshang/http-little-toy/data"
 	reqObj "github.com/leihenshang/http-little-toy/request"
 	"github.com/leihenshang/http-little-toy/sample"
@@ -39,6 +38,8 @@ var (
 	logChan chan []byte
 	// 记录响应数据
 	respChan chan data.RequestStats
+	// 请求示例对象
+	requestSample = new(data.RequestSample)
 )
 
 // 帮助
@@ -47,61 +48,24 @@ var helpTips = flag.Bool("h", false, "show help tips.")
 // 版本打印
 var version = flag.Bool("v", false, "show app version.")
 
-
-
-// url
-var reqUrl = flag.String("u", "", "The URL you want to test.")
-
-// header
-var headers xtype.StringSliceX
-
-// body
-var body = flag.String("body", "", "The http body.")
-
-// 日志文件
-var logFile = flag.Bool("log", false, "Log the request response to file. default: './log'")
-
-// 持续时间
-var duration = flag.Int("d", 10, "Duration of request.The unit is seconds.")
-
-// 线程数
-var thread = flag.Int("t", 10, "Number of threads.")
-
-// 启用keep alive
-var keepAlive = flag.Bool("keepAlive", true, "Use keep-alive for http protocol.")
-
-// 启用压缩
-var compression = flag.Bool("compression", true, "Use keep-alive for http protocol.")
-
-// 请求文件
-var requestFile = flag.String("f", "", "specify the request definition file.")
-
-// 创建请求文件模板
-var generateSample = flag.Bool("gen", false, "generate the request definition file template to the current directory.")
-
-// 等待响应超时时间
-var timeOut = flag.Uint("timeOut", 1000, "the time out to wait response.")
-
-// 跳过TLS验证
-var skipVerify = flag.Bool("skipVerify", false, "TLS skipVerify.")
-
-// 允许重定向
-var allowRedirects = flag.Bool("allowRedirects", true, "allowRedirects.")
-
-// 使用http2
-var useHttp2 = flag.Bool("useHttp2", false, "useHttp2.")
-
-// 客户端证书
-var clientCert = flag.String("clientCert", "", "clientCert.")
-
-// 客户端秘钥
-var clientKey = flag.String("clientKey", "", "clientKey.")
-
-// ca证书
-var caCert = flag.String("caCert", "", "caCert.")
-
 func init() {
-	flag.Var(&headers, "H", "The http header.")
+	flag.Var(&requestSample.Params.Headers, "H", "The http header.")
+	flag.StringVar(&requestSample.Params.ReqUrl, "u", "", "The URL you want to test.")
+	flag.StringVar(&requestSample.Params.Body, "body", "", "The http body.")
+	flag.BoolVar(&requestSample.Params.Log, "log", false, "Log the request response to file. default: './log'")
+	flag.IntVar(&requestSample.Params.Duration, "d", 10, "Duration of request.The unit is seconds.")
+	flag.IntVar(&requestSample.Params.Thread, "t", 10, "Number of threads.")
+	flag.BoolVar(&requestSample.Params.KeepAlive, "keepAlive", true, "Use keep-alive for http protocol.")
+	flag.BoolVar(&requestSample.Params.Compression, "compression", true, "Use keep-alive for http protocol.")
+	flag.StringVar(&requestSample.Params.RequestFile, "f", "", "specify the request definition file.")
+	flag.BoolVar(&requestSample.Params.GenerateSample, "gen", false, "generate the request definition file template to the current directory.")
+	flag.IntVar(&requestSample.Params.TimeOut, "timeOut", 1000, "the time out to wait response.")
+	flag.BoolVar(&requestSample.Params.SkipVerify, "skipVerify", false, "TLS skipVerify.")
+	flag.BoolVar(&requestSample.Params.AllowRedirects, "allowRedirects", true, "allowRedirects.")
+	flag.BoolVar(&requestSample.Params.UseHttp2, "useHttp2", false, "useHttp2.")
+	flag.StringVar(&requestSample.Params.ClientCert, "clientCert", "", "clientCert.")
+	flag.StringVar(&requestSample.Params.ClientKey, "clientKey", "", "clientKey.")
+	flag.StringVar(&requestSample.Params.CaCert, "caCert", "", "caCert.")
 }
 
 //printDefault 打印默认操作
@@ -140,7 +104,7 @@ func main() {
 	}
 
 	// 创建请求模板
-	if *generateSample {
+	if requestSample.Params.GenerateSample {
 		err := sample.GenerateRequestFile("./request_sample.json")
 		if err != nil {
 			fmt.Println(err)
@@ -151,8 +115,8 @@ func main() {
 
 	logCtx, logCancel := context.WithCancel(context.TODO())
 	defer logCancel()
-	if *logFile {
-		logChan = make(chan []byte, *thread)
+	if requestSample.Params.Log {
+		logChan = make(chan []byte, requestSample.Params.Thread)
 		logFile, logErr := myLog.CreateLog(LogDir)
 		if logErr != nil {
 			log.Fatalf("an error occurred while get log file.err:%+v\n", logErr)
@@ -191,30 +155,30 @@ func main() {
 		log.Fatal(validErr)
 	}
 
-	fmt.Printf("use %d coroutines,duration %d seconds.\n", *thread, *duration)
+	fmt.Printf("use %d coroutines,duration %d seconds.\n", requestSample.Params.Thread, requestSample.Params.Duration)
 	fmt.Printf("url: %v method:%v header: %v \n", request.Url, request.Method, request.Header)
 	fmt.Println("---------------stats---------------")
 
 	// 使用该通道来存储请求的结果,并启用一个协程来读取该通道的结果
-	respChan = make(chan data.RequestStats, *thread)
+	respChan = make(chan data.RequestStats, requestSample.Params.Thread)
 
 	ctx := context.TODO()
-	ctx, cancel := context.WithTimeout(ctx, time.Duration(1e9*(*duration)))
+	ctx, cancel := context.WithTimeout(ctx, time.Duration(1e9*(requestSample.Params.Duration)))
 	defer cancel()
 
-	for i := 1; i <= *thread; i++ {
+	for i := 1; i <= requestSample.Params.Thread; i++ {
 		go func() {
 			httpCtx := context.TODO()
 			client, clientErr := reqObj.GetHttpClient(
-				*keepAlive,
-				*compression,
-				time.Duration(*timeOut),
-				*skipVerify,
-				*allowRedirects,
-				*clientCert,
-				*clientKey,
-				*caCert,
-				*useHttp2,
+				requestSample.Params.KeepAlive,
+				requestSample.Params.Compression,
+				time.Duration(requestSample.Params.TimeOut),
+				requestSample.Params.SkipVerify,
+				requestSample.Params.AllowRedirects,
+				requestSample.Params.ClientCert,
+				requestSample.Params.ClientKey,
+				requestSample.Params.CaCert,
+				requestSample.Params.UseHttp2,
 			)
 			if clientErr != nil {
 				log.Fatal(clientErr)
@@ -230,7 +194,7 @@ func main() {
 					aggregate.MinReqTime = timeUtil.MinTime(aggregate.MinReqTime, d)
 					aggregate.RespSize += int64(size)
 
-					if *logFile {
+					if requestSample.Params.Log {
 						//写入日志通道
 						logChan <- rawBody
 					}
@@ -252,7 +216,7 @@ func main() {
 	}
 
 	allAggregate := data.RequestStats{MinReqTime: time.Hour}
-	for allAggregate.RespNum < *thread {
+	for allAggregate.RespNum < requestSample.Params.Thread {
 		select {
 		case r := <-respChan:
 			allAggregate.ErrNum += r.ErrNum
@@ -272,7 +236,7 @@ func main() {
 	//打印结果
 	printRes(allAggregate)
 
-	if *logFile {
+	if requestSample.Params.Log {
 		// FIXME 不优雅的解决一下日志没写完的问题
 		time.Sleep(2)
 		logCancel()
@@ -309,17 +273,17 @@ func printRes(allAggregate data.RequestStats) {
 }
 
 func checkParams() (request data.Request) {
-	if *requestFile == "" && *reqUrl == "" {
+	if requestSample.Params.RequestFile == "" && requestSample.Params.ReqUrl == "" {
 		log.Fatal("the URL cannot be empty.Use the \"-u\" or \"-f\" parameter to set the URL.")
 	}
 
-	if *requestFile != "" && *reqUrl != "" {
+	if requestSample.Params.RequestFile != "" && requestSample.Params.ReqUrl != "" {
 		log.Fatal("the \"-u\" or \"-f\" parameter can not exist the same time.")
 	}
 
 	// 默认请求文件优先级最高
-	if *requestFile != "" {
-		fileBytes, err := ioutil.ReadFile(*requestFile)
+	if requestSample.Params.RequestFile != "" {
+		fileBytes, err := ioutil.ReadFile(requestSample.Params.RequestFile)
 		if err != nil {
 			log.Fatal("an error occurred reading the file", err)
 		}
@@ -329,10 +293,10 @@ func checkParams() (request data.Request) {
 		}
 
 	} else {
-		request.Url = *reqUrl
+		request.Url = requestSample.Params.ReqUrl
 		request.Method = http.MethodGet
-		request.Body = *body
-		request.Header = headers
+		request.Body = requestSample.Params.Body
+		request.Header = requestSample.Params.Headers
 	}
 
 	// fmt.Printf("%+v \n", request)

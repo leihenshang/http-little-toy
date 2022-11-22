@@ -26,11 +26,13 @@ type Params struct {
 	// body
 	Body string `json:"body"`
 
+	EnableLog bool `json:"enableLog"`
+
 	// 日志文件
-	LogFile string `json:"logFile"`
+	Log bool `json:"log"`
 
 	// 持续时间
-	Duration time.Duration `json:"duration"`
+	Duration int `json:"duration"`
 
 	// 线程数
 	Thread int `json:"thread"`
@@ -48,7 +50,7 @@ type Params struct {
 	GenerateSample bool `json:"generateSample"`
 
 	// 等待响应超时时间
-	TimeOut time.Duration `json:"timeOut"`
+	TimeOut int `json:"timeOut"`
 
 	// 跳过TLS验证
 	SkipVerify bool `json:"skipVerify"`
