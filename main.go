@@ -213,8 +213,6 @@ func main() {
 			allAggregate.RespNum++
 		case <-sigChan:
 			cancel()
-			// 日志协程退出
-			logCancel()
 		}
 	}
 
