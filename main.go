@@ -33,7 +33,7 @@ const (
 // ----数据交换----
 var (
 	// 日志通道
-	logChan chan []byte
+	logChan = make(chan []byte, requestSample.Params.Thread)
 	// 记录响应数据
 	respChan chan data.RequestStats
 	// 请求示例对象
@@ -110,34 +110,10 @@ func main() {
 	logCtx, logCancel := context.WithCancel(context.TODO())
 	defer logCancel()
 	if requestSample.Params.Log {
-		logChan = make(chan []byte, requestSample.Params.Thread)
-		logFile, logErr := myLog.CreateLog(LogDir)
+		logErr := myLog.LogStart(logCtx, LogDir, logChan)
 		if logErr != nil {
-			log.Fatalf("an error occurred while get log file.err:%+v\n", logErr)
+			log.Fatal(logErr)
 		}
-
-		// 启动一个协程来处理日志写入
-		go func(c context.Context) {
-		LOOP:
-			for {
-				select {
-				case l := <-logChan:
-					logData := []byte(time.Now().Format("2006-01-02 15:04:05 "))
-					logData = append(logData, l...)
-					logData = append(logData, []byte("\n")...)
-					_, lErr := logFile.Write(logData)
-					if lErr != nil {
-						log.Printf("write log err:%+v\n", lErr)
-					}
-				case <-c.Done():
-					break LOOP
-				}
-
-			}
-			// 关闭日志文件
-			logFile.Close()
-		}(logCtx)
-
 	}
 
 	fmt.Printf("use %d coroutines,duration %d seconds.\n", requestSample.Params.Thread, requestSample.Params.Duration)

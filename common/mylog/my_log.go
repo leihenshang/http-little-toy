@@ -1,9 +1,11 @@
 package mylog
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io/fs"
+	"log"
 	"os"
 	"path"
 	"time"
@@ -11,7 +13,7 @@ import (
 	fileUtil "github.com/leihenshang/http-little-toy/common/utils/file-util"
 )
 
-func CreateLog(LogDir string) (f *os.File, err error) {
+func createLog(LogDir string) (f *os.File, err error) {
 	logDir, logDirErr := fileUtil.IsExisted(LogDir)
 	if logDirErr != nil {
 		err = errors.New(fmt.Sprintf("an error occurred while get log directory information. err:%+v \n", logDirErr))
@@ -35,5 +37,37 @@ func CreateLog(LogDir string) (f *os.File, err error) {
 	}
 
 	f = logFile
+	return
+}
+
+func LogStart(ctx context.Context, logDir string, logChan <-chan []byte) (err error) {
+
+	logFile, logErr := createLog(logDir)
+	if logErr != nil {
+		return logErr
+	}
+
+	// 启动一个协程来处理日志写入
+	go func(logCtx context.Context) {
+	LOOP:
+		for {
+			select {
+			case l := <-logChan:
+				logData := []byte(time.Now().Format("2006-01-02 15:04:05 "))
+				logData = append(logData, l...)
+				logData = append(logData, []byte("\n")...)
+				_, lErr := logFile.Write(logData)
+				if lErr != nil {
+					log.Printf("[LogStart] write log err:%+v\n", lErr)
+				}
+			case <-logCtx.Done():
+				break LOOP
+			}
+
+		}
+		// 关闭日志文件
+		logFile.Close()
+	}(ctx)
+
 	return
 }
