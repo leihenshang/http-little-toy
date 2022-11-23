@@ -222,7 +222,6 @@ func main() {
 	if requestSample.Params.Log {
 		// FIXME 不优雅的解决一下日志没写完的问题
 		time.Sleep(2)
-		logCancel()
 		d, _ := filepath.Abs(LogDir)
 		log.Printf("log in:%+v \n", d)
 	}
