@@ -120,9 +120,6 @@ func main() {
 	fmt.Printf("url: %v method:%v header: %v \n", request.Url, request.Method, request.Header)
 	fmt.Println("---------------stats---------------")
 
-	// 使用该通道来存储请求的结果,并启用一个协程来读取该通道的结果
-	respChan = make(chan data.RequestStats, requestSample.Params.Thread)
-
 	ctx := context.TODO()
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(1e9*(requestSample.Params.Duration)))
 	defer cancel()
