@@ -13,6 +13,16 @@ import (
 	fileUtil "github.com/leihenshang/http-little-toy/common/utils/file-util"
 )
 
+type MyLog struct {
+	logChan chan []byte
+}
+
+func NewMyLog() *MyLog {
+	return &MyLog{
+		logChan: make(chan []byte),
+	}
+}
+
 func createLog(LogDir string) (f *os.File, err error) {
 	logDir, logDirErr := fileUtil.IsExisted(LogDir)
 	if logDirErr != nil {
@@ -40,7 +50,7 @@ func createLog(LogDir string) (f *os.File, err error) {
 	return
 }
 
-func LogStart(ctx context.Context, logDir string, logChan <-chan []byte) (err error) {
+func (m *MyLog) LogStart(ctx context.Context, logDir string) (err error) {
 
 	logFile, logErr := createLog(logDir)
 	if logErr != nil {
@@ -52,7 +62,7 @@ func LogStart(ctx context.Context, logDir string, logChan <-chan []byte) (err er
 	LOOP:
 		for {
 			select {
-			case l := <-logChan:
+			case l := <-m.logChan:
 				logData := []byte(time.Now().Format("2006-01-02 15:04:05 "))
 				logData = append(logData, l...)
 				logData = append(logData, []byte("\n")...)
@@ -70,4 +80,8 @@ func LogStart(ctx context.Context, logDir string, logChan <-chan []byte) (err er
 	}(ctx)
 
 	return
+}
+
+func (m *MyLog) WriteLog(l []byte) {
+	m.logChan <- l
 }

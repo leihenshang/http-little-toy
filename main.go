@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 	"time"
 
-	myLog "github.com/leihenshang/http-little-toy/common/mylog"
+	"github.com/leihenshang/http-little-toy/common/mylog"
 	timeUtil "github.com/leihenshang/http-little-toy/common/utils/time-util"
 	"github.com/leihenshang/http-little-toy/data"
 	reqObj "github.com/leihenshang/http-little-toy/request"
@@ -32,10 +32,10 @@ const (
 
 // ----数据交换----
 var (
-	// 日志通道
-	logChan chan []byte
 	// 记录响应数据
 	respChan chan data.RequestStats
+	// 日志
+	mLog *mylog.MyLog
 	// 请求示例对象
 	requestSample = new(data.RequestSample)
 )
@@ -110,14 +110,14 @@ func main() {
 	logCtx, logCancel := context.WithCancel(context.TODO())
 	defer logCancel()
 	if requestSample.Params.Log {
-		logErr := myLog.LogStart(logCtx, LogDir, logChan)
+		mLog = mylog.NewMyLog()
+		logErr := mLog.LogStart(logCtx, LogDir)
 		if logErr != nil {
 			log.Fatal(logErr)
 		}
 	}
 
 	// 初始化通道
-	logChan = make(chan []byte, requestSample.Params.Thread)
 	respChan = make(chan data.RequestStats, requestSample.Params.Thread)
 
 	fmt.Printf("use %d coroutines,duration %d seconds.\n", requestSample.Params.Thread, requestSample.Params.Duration)
@@ -158,7 +158,7 @@ func main() {
 
 					if requestSample.Params.Log {
 						//写入日志通道
-						logChan <- rawBody
+						mLog.WriteLog(rawBody)
 					}
 
 				} else {
