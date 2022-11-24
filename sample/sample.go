@@ -1,8 +1,11 @@
 package sample
 
 import (
+	"encoding/json"
 	"errors"
 	"os"
+
+	"github.com/leihenshang/http-little-toy/data"
 )
 
 // 自定义一个模板类型
@@ -22,7 +25,7 @@ var template Template = `
 
 func GenerateRequestFile(fileWithPath string) (err error) {
 	if _, statErr := os.Stat(fileWithPath); statErr == nil {
-		err = errors.New("The file already exists.")
+		err = errors.New("the file already exists")
 		return
 	}
 
@@ -38,7 +41,7 @@ func GenerateRequestFile(fileWithPath string) (err error) {
 
 func GenerateRequestFileV1(fileWithPath string) (err error) {
 	if _, statErr := os.Stat(fileWithPath); statErr == nil {
-		err = errors.New("The file already exists.")
+		err = errors.New("the file already exists")
 		return
 	}
 
@@ -49,13 +52,11 @@ func GenerateRequestFileV1(fileWithPath string) (err error) {
 	}
 
 	sampleData := data.RequestSample{}
-	 marshalData, marshalErr := json.Marshal(sampleData)
-	 if marshalErr != nil {
+	marshalData, marshalErr := json.Marshal(sampleData)
+	if marshalErr != nil {
 		return marshalErr
 	}
 
-
-	_, err = file.WriteBytes(marshalData)
+	_, err = file.Write(marshalData)
 	return
 }
-

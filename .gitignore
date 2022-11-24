@@ -10,4 +10,7 @@ log
 # visual studio code 
 .vscode
 
+# sample file 
+request_sample.json
+
 
