@@ -33,7 +33,7 @@ const (
 // ----数据交换----
 var (
 	// 日志通道
-	logChan = make(chan []byte, requestSample.Params.Thread)
+	logChan chan []byte
 	// 记录响应数据
 	respChan chan data.RequestStats
 	// 请求示例对象
@@ -115,6 +115,10 @@ func main() {
 			log.Fatal(logErr)
 		}
 	}
+
+	// 初始化通道
+	logChan = make(chan []byte, requestSample.Params.Thread)
+	respChan = make(chan data.RequestStats, requestSample.Params.Thread)
 
 	fmt.Printf("use %d coroutines,duration %d seconds.\n", requestSample.Params.Thread, requestSample.Params.Duration)
 	fmt.Printf("url: %v method:%v header: %v \n", request.Url, request.Method, request.Header)
