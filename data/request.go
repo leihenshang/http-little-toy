@@ -23,21 +23,19 @@ type Request struct {
 // Params 请求参数
 type Params struct {
 	// url
-	Url string `json:"url"`
+	Url string `json:"-"`
 
 	// header
-	Header xtype.StringSliceX `json:"header"`
+	Header xtype.StringSliceX `json:"-"`
 
 	// body
-	Body string `json:"body"`
-
-	EnableLog bool `json:"enableLog"`
+	Body string `json:"-"`
 
 	// 日志文件
 	Log bool `json:"log"`
 
 	// http 方法
-	Method string `json:"method"`
+	Method string `json:"-"`
 
 	// 持续时间
 	Duration int `json:"duration"`
@@ -52,10 +50,10 @@ type Params struct {
 	Compression bool `json:"compression"`
 
 	// 请求文件
-	RequestFile string `json:"requestFile"`
+	RequestFile string `json:"-"`
 
 	// 创建请求文件模板
-	GenerateSample bool `json:"generateSample"`
+	GenerateSample bool `json:"-"`
 
 	// 等待响应超时时间
 	TimeOut int `json:"timeOut"`
@@ -143,7 +141,7 @@ func (r *RequestSample) ParseParams() (reqObj Request, err error) {
 	return
 }
 
-//printDefault 打印默认操作
+// printDefault 打印默认操作
 func (r *RequestSample) PrintDefault(appName string) {
 	fmt.Printf("Usage: %s <options>", appName)
 	fmt.Println("Options:")

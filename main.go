@@ -89,7 +89,7 @@ func main() {
 
 	// 创建请求模板
 	if requestSample.Params.GenerateSample {
-		err := sample.GenerateRequestFile("./request_sample.json")
+		err := sample.GenerateRequestFileV1("./request_sample.json", requestSample)
 		if err != nil {
 			log.Fatal(err)
 		}

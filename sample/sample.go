@@ -39,10 +39,15 @@ func GenerateRequestFile(fileWithPath string) (err error) {
 	return
 }
 
-func GenerateRequestFileV1(fileWithPath string) (err error) {
-	if _, statErr := os.Stat(fileWithPath); statErr == nil {
-		err = errors.New("the file already exists")
+func GenerateRequestFileV1(fileWithPath string, requestSample *data.RequestSample) (err error) {
+	if requestSample == nil {
+		err = errors.New("request sample object can not be nil")
 		return
+	}
+
+	if _, statErr := os.Stat(fileWithPath); statErr == nil {
+		// err = errors.New("the file already exists")
+		// return
 	}
 
 	file, createErr := os.Create(fileWithPath)
@@ -51,8 +56,19 @@ func GenerateRequestFileV1(fileWithPath string) (err error) {
 		return
 	}
 
-	sampleData := data.RequestSample{}
-	marshalData, marshalErr := json.Marshal(sampleData)
+	if requestSample.ExecuteCount <= 0 {
+		requestSample.ExecuteCount = 1
+	}
+	if requestSample.Request.Url == "" {
+		req := &data.Request{}
+		unmarshalErr := json.Unmarshal([]byte(template), &req)
+		if unmarshalErr != nil {
+			return unmarshalErr
+		}
+		requestSample.Request = *req
+	}
+
+	marshalData, marshalErr := json.Marshal(requestSample)
 	if marshalErr != nil {
 		return marshalErr
 	}
