@@ -76,13 +76,13 @@ func main() {
 	signal.Notify(sigChan, os.Interrupt)
 
 	// 打印帮助
-	if *helpTips == true {
+	if *helpTips {
 		requestSample.PrintDefault(AppName)
 		return
 	}
 
 	// 打印版本
-	if *version == true {
+	if *version {
 		fmt.Printf("%s v%s \n", AppName, Version)
 		return
 	}
@@ -198,7 +198,7 @@ func main() {
 
 	if requestSample.Params.Log {
 		// FIXME 不优雅的解决一下日志没写完的问题
-		time.Sleep(2)
+		time.Sleep(time.Second * 2)
 		d, _ := filepath.Abs(LogDir)
 		log.Printf("log in:%+v \n", d)
 	}
