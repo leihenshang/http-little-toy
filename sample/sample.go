@@ -35,3 +35,27 @@ func GenerateRequestFile(fileWithPath string) (err error) {
 	_, err = file.WriteString(string(template))
 	return
 }
+
+func GenerateRequestFileV1(fileWithPath string) (err error) {
+	if _, statErr := os.Stat(fileWithPath); statErr == nil {
+		err = errors.New("The file already exists.")
+		return
+	}
+
+	file, createErr := os.Create(fileWithPath)
+	if createErr != nil {
+		err = errors.New("the error occurred while creating the file:" + createErr.Error())
+		return
+	}
+
+	sampleData := data.RequestSample{}
+	 marshalData, marshalErr := json.Marshal(sampleData)
+	 if marshalErr != nil {
+		return marshalErr
+	}
+
+
+	_, err = file.WriteBytes(marshalData)
+	return
+}
+
