@@ -5,8 +5,8 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os"
 
 	httputil "github.com/leihenshang/http-little-toy/common/utils/http-util"
 	"github.com/leihenshang/http-little-toy/common/xtype"
@@ -100,19 +100,19 @@ func (r *Request) Valid() (err error) {
 func (r *RequestSample) ParseParams() (reqObj Request, err error) {
 
 	if r.Params.RequestFile == "" && r.Params.Url == "" {
-		err = errors.New("the URL cannot be empty.Use the \"-u\" or \"-f\" parameter to set the URL.")
+		err = errors.New("the URL cannot be empty.Use the \"-u\" or \"-f\" parameter to set the URL")
 		return
 	}
 
 	if r.Params.RequestFile != "" && r.Params.Url != "" {
-		err = errors.New("the \"-u\" or \"-f\" parameter can not exist the same time.")
+		err = errors.New("the \"-u\" or \"-f\" parameter can not exist the same time")
 		return
 	}
 
 	// 默认请求文件优先级最高
 	if r.Params.RequestFile != "" {
 		log.Printf("ParseParams: use request file: %s \n", r.Params.RequestFile)
-		fileBytes, readErr := ioutil.ReadFile(r.Params.RequestFile)
+		fileBytes, readErr := os.ReadFile(r.Params.RequestFile)
 		if err != nil {
 			err = errors.New("an error occurred reading the 'request_sample.json' file.err:" + readErr.Error())
 			return

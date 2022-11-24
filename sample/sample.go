@@ -46,8 +46,8 @@ func GenerateRequestFileV1(fileWithPath string, requestSample *data.RequestSampl
 	}
 
 	if _, statErr := os.Stat(fileWithPath); statErr == nil {
-		// err = errors.New("the file already exists")
-		// return
+		err = errors.New("the file already exists")
+		return
 	}
 
 	file, createErr := os.Create(fileWithPath)
