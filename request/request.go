@@ -24,7 +24,9 @@ func GetHttpClient(
 	timeout time.Duration,
 	skipVerify bool,
 	allowRedirects bool,
-	clientCert, clientKey, caCert string,
+	clientCert string,
+	clientKey string,
+	caCert string,
 	useHttp2 bool,
 ) (client *http.Client, err error) {
 	client = &http.Client{}
