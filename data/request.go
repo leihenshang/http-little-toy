@@ -78,9 +78,9 @@ type Params struct {
 }
 
 type RequestSample struct {
-	ExecuteCount uint
-	Params       Params
-	Request      Request
+	// ExecuteCount uint
+	Params  Params
+	Request Request
 }
 
 func (r *Request) Valid() (err error) {

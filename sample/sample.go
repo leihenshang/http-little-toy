@@ -56,9 +56,9 @@ func GenerateRequestFileV1(fileWithPath string, requestSample *data.RequestSampl
 		return
 	}
 
-	if requestSample.ExecuteCount <= 0 {
-		requestSample.ExecuteCount = 1
-	}
+	// if requestSample.ExecuteCount <= 0 {
+	// 	requestSample.ExecuteCount = 1
+	// }
 	if requestSample.Request.Url == "" {
 		req := &data.Request{}
 		unmarshalErr := json.Unmarshal([]byte(template), &req)
