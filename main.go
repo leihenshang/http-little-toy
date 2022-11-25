@@ -18,19 +18,6 @@ import (
 	"github.com/leihenshang/http-little-toy/sample"
 )
 
-// ----基本设置----
-const (
-	// 版本
-	Version = "0.0.4"
-
-	// 请求代理名称
-	AppName = "http-little-toy"
-
-	// 日志目录
-	LogDir = "log"
-)
-
-// ----数据交换----
 var (
 	// 记录响应数据
 	respChan chan data.RequestStats
@@ -77,13 +64,13 @@ func main() {
 
 	// 打印帮助
 	if *helpTips {
-		requestSample.PrintDefault(AppName)
+		requestSample.PrintDefault(data.AppName)
 		return
 	}
 
 	// 打印版本
 	if *version {
-		fmt.Printf("%s v%s \n", AppName, Version)
+		fmt.Printf("%s v%s \n", data.AppName, data.Version)
 		return
 	}
 
@@ -111,7 +98,7 @@ func main() {
 	defer logCancel()
 	if requestSample.Params.Log {
 		mLog = mylog.NewMyLog()
-		logErr := mLog.LogStart(logCtx, LogDir)
+		logErr := mLog.LogStart(logCtx, data.LogDir)
 		if logErr != nil {
 			log.Fatal(logErr)
 		}
@@ -199,7 +186,7 @@ func main() {
 	if requestSample.Params.Log {
 		// FIXME 不优雅的解决一下日志没写完的问题
 		time.Sleep(time.Second * 2)
-		d, _ := filepath.Abs(LogDir)
+		d, _ := filepath.Abs(data.LogDir)
 		log.Printf("log in:%+v \n", d)
 	}
 

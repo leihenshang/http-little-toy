@@ -108,6 +108,7 @@ func HandleReq(_ context.Context, client *http.Client, reqObj data.Request) (res
 		fmt.Printf("new request failed, err:%v\n", err)
 		return
 	}
+	req.Header.Set("User-Agent", fmt.Sprintf("%s/%s", data.AppName, data.Version))
 
 	if len(reqObj.Header) > 0 {
 		for _, v := range reqObj.Header {
