@@ -114,6 +114,10 @@ go build -o httpToy
 ```
 
 ```bash
+
+# 服务端ssl
+go run . -certFile="../client-cert/server.crt" -keyFile="../client-cert/server.key"
+
 # 测试使用SSL,添加证书验证
 go run . -u https://localhost:9090 -clientCert="./client-cert/ca.crt" -clientKey="./client-cert/ca.key" -caCert="./client-cert/ca.crt" -skipVerify=true
 ```
