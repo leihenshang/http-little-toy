@@ -34,7 +34,7 @@ func main() {
 		w.Write([]byte("body:" + string(bodyBytes) + "\n"))
 
 	})
-
+	log.Printf("start success! listen address is %+v", *listenAddr)
 	if *certFile != "" {
 		if *keyFile == "" {
 			log.Fatal("cert file can not be empty")
@@ -44,5 +44,5 @@ func main() {
 	} else {
 		log.Fatal(http.ListenAndServe(*listenAddr, nil))
 	}
-	log.Printf("start success! listen address is %+v", *listenAddr)
+
 }
