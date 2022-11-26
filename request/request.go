@@ -7,8 +7,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -65,7 +65,7 @@ func GetHttpClient(
 	}
 
 	// Load our CA certificate
-	clientCACert, err := ioutil.ReadFile(caCert)
+	clientCACert, err := os.ReadFile(caCert)
 	if err != nil {
 		return nil, fmt.Errorf("unable to open cert %v", err)
 	}
@@ -79,7 +79,6 @@ func GetHttpClient(
 		InsecureSkipVerify: skipVerify,
 	}
 
-	tlsConfig.BuildNameToCertificate()
 	t := &http.Transport{
 		TLSClientConfig: tlsConfig,
 	}
