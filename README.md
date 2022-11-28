@@ -21,13 +21,13 @@
 造轮子好玩吗？
 真好玩！
 
-#### todo
+#### 特性
 
 - [x] 命令行中加入设置 `header` 头
 
 - [x] 命令行中加入设置 `body` 负载
 
-- [ ] 完善一下 `request.json` 请求文件的逻辑
+- [x] 完善一下 `request.json` 请求文件的逻辑
 
 - [x] 添加记录响应数据日志的功能，方便分析
 
@@ -92,9 +92,39 @@ Options:
 
 #### 手动编译
 
+linux & mac 
+
 ```bash
 # 把项目编译成可执行文件并输出到当前目录
-go build -o httpToy
+go build -o http-little-toy
+
+
+## 根据系统选择
+
+# linux 
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o bin/http-little-toy
+
+# windows 
+CGO_ENABLED=0 GOOS=windowd GOARCH=amd64 go build -o bin/http-little-toy
+
+# mac
+CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o bin/http-little-toy
+```
+
+windows 
+
+```cmd
+# Mac
+SET CGO_ENABLED=0
+SET GOOS=darwin
+SET GOARCH=amd64
+go build -o bin/http-little-toy
+ 
+# Linux
+SET CGO_ENABLED=0
+SET GOOS=linux
+SET GOARCH=amd64
+go build -o bin/http-little-toy
 ```
 
 #### 执行测试命令

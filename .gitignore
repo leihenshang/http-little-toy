@@ -2,7 +2,7 @@
 .DS_Store
 
 # complied the product
-httpToy
+bin
 
 # log 
 log
