@@ -4,13 +4,15 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 )
 
 var (
 	listenAddr = flag.String("http", ":9090", "http listen address")
+	certFile   = flag.String("certFile", "", "cert file")
+	keyFile    = flag.String("keyFile", "", "cert key")
 )
 
 func main() {
@@ -23,7 +25,7 @@ func main() {
 			defer body.Close()
 		}
 
-		bodyBytes, _ := ioutil.ReadAll(body)
+		bodyBytes, _ := io.ReadAll(body)
 
 		w.Write([]byte("welcome to shop! \n"))
 		fmt.Println("header:" + string(hBytes) + "\n")
@@ -32,7 +34,15 @@ func main() {
 		w.Write([]byte("body:" + string(bodyBytes) + "\n"))
 
 	})
-
 	log.Printf("start success! listen address is %+v", *listenAddr)
-	log.Fatal(http.ListenAndServe(*listenAddr, nil))
+	if *certFile != "" {
+		if *keyFile == "" {
+			log.Fatal("cert file can not be empty")
+		}
+
+		log.Fatal(http.ListenAndServeTLS(*listenAddr, *certFile, *keyFile, nil))
+	} else {
+		log.Fatal(http.ListenAndServe(*listenAddr, nil))
+	}
+
 }
