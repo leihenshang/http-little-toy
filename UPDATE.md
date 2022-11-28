@@ -6,7 +6,8 @@ v0.0.4
 
 - 重构项目main,拆分解耦逻辑
 - 重构参数验证,删除 `-d` 和 `-t` 的强制验证
-- 添加 `User-Agent` 标识
+- 添加 `User-Agent` 标识 `http-little-toy [version]`
+- 完善请求文件逻辑，请求文件优先级 > 命令行参数
 
 v0.0.3
 
