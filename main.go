@@ -19,18 +19,18 @@ import (
 )
 
 var (
-	// 记录响应数据
+	// response channel
 	respChan chan data.RequestStats
-	// 日志
+	// log
 	mLog *mylog.MyLog
-	// 请求示例对象
+	// request sample object
 	requestSample = new(data.RequestSample)
 )
 
-// 帮助
+// help tips
 var helpTips = flag.Bool("h", false, "show help tips.")
 
-// 版本打印
+// version display
 var version = flag.Bool("v", false, "show app version.")
 
 func init() {
@@ -55,26 +55,23 @@ func init() {
 }
 
 func main() {
-	// 解析所有标志
 	flag.Parse()
 
 	// 设置一个信号通道，获取来自终端的终止信号
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt)
 
-	// 打印帮助
 	if *helpTips {
 		requestSample.PrintDefault(data.AppName)
 		return
 	}
 
-	// 打印版本
 	if *version {
 		fmt.Printf("%s v%s \n", data.AppName, data.Version)
 		return
 	}
 
-	// 创建请求模板
+	// generate a request sample
 	if requestSample.Params.GenerateSample {
 		err := sample.GenerateRequestFileV1("./request_sample.json", requestSample)
 		if err != nil {
@@ -83,12 +80,12 @@ func main() {
 		return
 	}
 
-	// 检查参数对象
+	// check params object
 	request, parseErr := requestSample.ParseParams()
 	if parseErr != nil {
 		log.Fatal(parseErr)
 	}
-	// 请求对象校验
+	// check request object
 	validErr := request.Valid()
 	if validErr != nil {
 		log.Fatal(validErr)
@@ -104,7 +101,7 @@ func main() {
 		}
 	}
 
-	// 初始化通道
+	// init resp channel
 	respChan = make(chan data.RequestStats, requestSample.Params.Thread)
 
 	fmt.Printf("use %d coroutines,duration %d seconds.\n", requestSample.Params.Thread, requestSample.Params.Duration)
@@ -144,7 +141,7 @@ func main() {
 					aggregate.RespSize += int64(size)
 
 					if requestSample.Params.Log {
-						//写入日志通道
+						// log write
 						mLog.WriteLog(rawBody)
 					}
 
@@ -155,7 +152,7 @@ func main() {
 
 				select {
 				case <-ctx.Done():
-					// 结束执行
+					// break circulation
 					break LOOP
 				default:
 				}
@@ -180,7 +177,6 @@ func main() {
 		}
 	}
 
-	//打印结果
 	allAggregate.PrintStats()
 
 	if requestSample.Params.Log {
