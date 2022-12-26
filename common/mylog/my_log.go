@@ -13,10 +13,12 @@ import (
 	fileUtil "github.com/leihenshang/http-little-toy/common/utils/file-util"
 )
 
+//MyLog 日志对象
 type MyLog struct {
 	logChan chan []byte
 }
 
+//NewMyLog create a `MyLog` object.
 func NewMyLog() *MyLog {
 	return &MyLog{
 		logChan: make(chan []byte),
@@ -50,6 +52,7 @@ func createLog(LogDir string) (f *os.File, err error) {
 	return
 }
 
+//LogStart start log
 func (m *MyLog) LogStart(ctx context.Context, logDir string) (err error) {
 
 	logFile, logErr := createLog(logDir)
@@ -82,6 +85,7 @@ func (m *MyLog) LogStart(ctx context.Context, logDir string) (err error) {
 	return
 }
 
+//WriteLog write a log information
 func (m *MyLog) WriteLog(l []byte) {
 	m.logChan <- l
 }
