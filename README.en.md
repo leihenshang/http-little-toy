@@ -15,13 +15,13 @@ Inspiration comes from 'github' on various versions of 'wrk' http concurrent tes
 Is it fun to build wheels?
 That was fun!
 
-#### todo
+#### feature
 
 - [x] Command line directives support setting `http header`
 
 - [x] Command line directives support setting `http body`
 
-- [ ] Prefect the `request.json` sample file
+- [x] Prefect the `request.json` sample file
 
 - [x] Adding a response log
 

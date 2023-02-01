@@ -77,12 +77,14 @@ type Params struct {
 	CaCert string `json:"caCert"`
 }
 
+//RequestSample 请求模板对象
 type RequestSample struct {
 	// ExecuteCount uint
 	Params  Params
 	Request Request
 }
 
+//Valid 验证请求对象
 func (r *Request) Valid() (err error) {
 	// 检查 url 格式
 	if urlErr := httputil.CheckUrlAddr(r.Url); urlErr != nil {
@@ -97,6 +99,7 @@ func (r *Request) Valid() (err error) {
 	return
 }
 
+//ParseParams 解析参数
 func (r *RequestSample) ParseParams() (reqObj Request, err error) {
 
 	if r.Params.RequestFile == "" && r.Params.Url == "" {
@@ -141,7 +144,7 @@ func (r *RequestSample) ParseParams() (reqObj Request, err error) {
 	return
 }
 
-// printDefault 打印默认操作
+// PrintDefault  打印默认操作
 func (r *RequestSample) PrintDefault(appName string) {
 	fmt.Printf("Usage: %s <options>", appName)
 	fmt.Println("Options:")

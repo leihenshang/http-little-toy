@@ -6,6 +6,7 @@ import (
 )
 
 //RequestStats 请求数据统计
+//the request statistics
 type RequestStats struct {
 	RespSize   int64
 	Duration   time.Duration
@@ -16,6 +17,7 @@ type RequestStats struct {
 	RespNum    int
 }
 
+//PrintStats 打印统计数据
 func (r *RequestStats) PrintStats() {
 	averageThreadDuration := func() time.Duration {
 		if time.Duration(r.RespNum) <= 0 {
