@@ -57,7 +57,7 @@ func init() {
 func main() {
 	flag.Parse()
 
-	// 设置一个信号通道，获取来自终端的终止信号
+	// set up a signal channel to get os interrupt signal from terminal
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt)
 
@@ -93,8 +93,8 @@ func main() {
 
 	logCtx, logCancel := context.WithCancel(context.TODO())
 	defer logCancel()
+	mLog = mylog.NewMyLog()
 	if requestSample.Params.Log {
-		mLog = mylog.NewMyLog()
 		logErr := mLog.LogStart(logCtx, data.LogDir)
 		if logErr != nil {
 			log.Fatal(logErr)
@@ -132,6 +132,11 @@ func main() {
 			aggregate := data.RequestStats{MinReqTime: time.Hour}
 		LOOP:
 			for {
+
+				if requestSample.Params.Log {
+					mLog.MyWait.Add(1)
+				}
+
 				size, d, rawBody, err := reqObj.HandleReq(httpCtx, client, request)
 				if size > 0 && err == nil {
 					aggregate.Duration += d
@@ -180,10 +185,9 @@ func main() {
 	allAggregate.PrintStats()
 
 	if requestSample.Params.Log {
-		// FIXME 不优雅的解决一下日志没写完的问题
-		time.Sleep(time.Second * 2)
+		mLog.MyWait.Wait()
 		d, _ := filepath.Abs(data.LogDir)
-		log.Printf("log in:%+v \n", d)
+		log.Printf("log files are saves in:%+v \n", d)
 	}
 
 }

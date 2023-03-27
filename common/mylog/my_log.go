@@ -8,20 +8,24 @@ import (
 	"log"
 	"os"
 	"path"
+	"sync"
 	"time"
 
 	fileUtil "github.com/leihenshang/http-little-toy/common/utils/file-util"
 )
 
-//MyLog 日志对象
+// MyLog a log object
 type MyLog struct {
 	logChan chan []byte
+	// a counter
+	MyWait *sync.WaitGroup
 }
 
-//NewMyLog create a `MyLog` object.
+// NewMyLog create a `MyLog` object.
 func NewMyLog() *MyLog {
 	return &MyLog{
 		logChan: make(chan []byte),
+		MyWait:  &sync.WaitGroup{},
 	}
 }
 
@@ -52,7 +56,7 @@ func createLog(LogDir string) (f *os.File, err error) {
 	return
 }
 
-//LogStart start log
+// LogStart start log
 func (m *MyLog) LogStart(ctx context.Context, logDir string) (err error) {
 
 	logFile, logErr := createLog(logDir)
@@ -60,12 +64,12 @@ func (m *MyLog) LogStart(ctx context.Context, logDir string) (err error) {
 		return logErr
 	}
 
-	// 启动一个协程来处理日志写入
 	go func(logCtx context.Context) {
 	LOOP:
 		for {
 			select {
 			case l := <-m.logChan:
+				m.MyWait.Done()
 				logData := []byte(time.Now().Format("2006-01-02 15:04:05 "))
 				logData = append(logData, l...)
 				logData = append(logData, []byte("\n")...)
@@ -78,14 +82,14 @@ func (m *MyLog) LogStart(ctx context.Context, logDir string) (err error) {
 			}
 
 		}
-		// 关闭日志文件
+
 		logFile.Close()
 	}(ctx)
 
 	return
 }
 
-//WriteLog write a log information
+// WriteLog write a log information
 func (m *MyLog) WriteLog(l []byte) {
 	m.logChan <- l
 }

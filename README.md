@@ -141,7 +141,15 @@ go build -o bin/http-little-toy
 ```
 
 ```bash
-# 使用test-server
+# 使用test-server 测试
+
+
  go run . -u http://localhost:9090 -H aaa:bbbb -H ccc:ddd -body "hhhhh2333333" -d 2 -t 1
 ```
 
+
+```bash 
+# Common directive
+go run . -u http://localhost:9090 -H aaa:bbbb -H ccc:ddd -body "hhhhh2333333" -d 10 -t 10 -log=true
+
+```
