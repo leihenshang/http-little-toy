@@ -105,7 +105,7 @@ go build -o http-little-toy
 CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o bin/http-little-toy
 
 # windows 
-CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o bin/http-little-toy
+CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o bin/http-little-toy.exe
 
 # mac
 CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o bin/http-little-toy
