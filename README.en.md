@@ -10,10 +10,11 @@ A simple http concurrent testing tool.
 
 #### introduce
 
-Inspiration comes from 'github' on various versions of 'wrk' http concurrent testing tools, one day saw a go written version, this? I can do it too. I'll build a wheel myself. orz.
+Inspiration comes from 'github' on various versions of 'wrk' http concurrent testing tools。
 
 Is it fun to build wheels?
 That was fun!
+orz.
 
 #### feature
 
