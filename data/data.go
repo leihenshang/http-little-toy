@@ -1,7 +1,7 @@
 package data
 
 const (
-	Version = "0.0.4"
+	Version = "0.0.5"
 
 	AppName = "http-little-toy"
 
