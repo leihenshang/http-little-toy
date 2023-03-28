@@ -99,7 +99,7 @@ linux & mac
 go build -o http-little-toy
 
 
-## 根据系统选择
+## 在linux或mac上编译
 
 # linux 
 CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o bin/http-little-toy
@@ -111,7 +111,7 @@ CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o bin/http-little-toy.exe
 CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o bin/http-little-toy
 ```
 
-windows 
+在windows 上编译
 
 ```cmd
 # Mac
@@ -125,6 +125,9 @@ SET CGO_ENABLED=0
 SET GOOS=linux
 SET GOARCH=amd64
 go build -o bin/http-little-toy
+
+#window
+go build -o bin/http-little-toy.exe
 ```
 
 #### 执行测试命令
