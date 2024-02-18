@@ -5,8 +5,7 @@ import (
 	"time"
 )
 
-//RequestStats 请求数据统计
-//the request statistics
+// RequestStats request statistics
 type RequestStats struct {
 	RespSize   int64
 	Duration   time.Duration
@@ -17,22 +16,22 @@ type RequestStats struct {
 	RespNum    int
 }
 
-//PrintStats 打印统计数据
+//PrintStats print statistics data
 func (r *RequestStats) PrintStats() {
 	averageThreadDuration := func() time.Duration {
 		if time.Duration(r.RespNum) <= 0 {
 			return 0
 		}
 		return r.Duration / time.Duration(r.RespNum)
-
 	}()
+
 	averageRequestTime := func() time.Duration {
 		if time.Duration(r.SuccessNum) <= 0 {
 			return 0
 		}
-
 		return r.Duration / time.Duration(r.SuccessNum)
 	}()
+
 	perSecondTimes := float64(r.SuccessNum) / averageThreadDuration.Seconds()
 	byteRate := float64(r.RespSize) / averageThreadDuration.Seconds()
 
