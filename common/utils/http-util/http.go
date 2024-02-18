@@ -43,25 +43,17 @@ func CalculateHttpHeadersSize(headers http.Header) (result int64) {
 	return result
 }
 
-func CheckUrlAddr(urlAddr string) (err error) {
-
-	if urlAddr == "" {
-		return errors.New("url is empty")
-	}
-
+func CheckUrl(urlAddr string) (err error) {
 	urlObj, urlErr := url.Parse(urlAddr)
 	if urlErr != nil {
-		return errors.New("an error occurred while parsing the url")
+		return errors.New("an error occurred while parsing the url," + urlErr.Error())
 	}
 
 	if urlObj.Scheme != "http" && urlObj.Scheme != "https" {
 		return errors.New("url schema illegal:" + urlObj.Scheme)
 	}
 
-	hostName := urlObj.Hostname()
-	port := urlObj.Port()
-
-	portErr := checkutil.ConnectivityTest(fmt.Sprintf("%s:%s", hostName, port))
+	portErr := checkutil.ConnectivityTest(fmt.Sprintf("%s:%s", urlObj.Hostname(), urlObj.Port()))
 	if portErr != nil {
 		return portErr
 	}

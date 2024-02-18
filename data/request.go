@@ -87,7 +87,7 @@ type RequestSample struct {
 //Valid 验证请求对象
 func (r *Request) Valid() (err error) {
 	// 检查 url 格式
-	if urlErr := httputil.CheckUrlAddr(r.Url); urlErr != nil {
+	if urlErr := httputil.CheckUrl(r.Url); urlErr != nil {
 		return urlErr
 	}
 
