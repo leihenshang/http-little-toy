@@ -132,7 +132,7 @@ func HandleReq(_ context.Context, client *http.Client, reqObj data.Request) (res
 
 	rawBody, err = io.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println("an error occurred doing request:", err)
+		fmt.Println("an error occurred doing request(io readAll):", err)
 	}
 
 	headerSize := 0
