@@ -55,7 +55,6 @@ func GetHttpClient(
 	if clientCert == "" {
 		return nil, fmt.Errorf("client certificate can't be empty")
 	}
-
 	if clientKey == "" {
 		return nil, fmt.Errorf("client key can't be empty")
 	}
@@ -64,7 +63,7 @@ func GetHttpClient(
 		return nil, fmt.Errorf("unable to load cert tried to load %v and %v but got %v", clientCert, clientKey, err)
 	}
 
-	// Load our CA certificate
+	// load our CA certificate
 	clientCACert, err := os.ReadFile(caCert)
 	if err != nil {
 		return nil, fmt.Errorf("unable to open cert %v", err)
@@ -84,11 +83,11 @@ func GetHttpClient(
 	}
 
 	if useHttp2 {
-		http2Err := http2.ConfigureTransport(t)
-		if http2Err != nil {
-			return nil, http2Err
+		if err = http2.ConfigureTransport(t); err != nil {
+			return nil, err
 		}
 	}
+
 	client.Transport = t
 	return client, nil
 }
