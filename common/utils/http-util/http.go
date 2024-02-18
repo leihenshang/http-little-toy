@@ -9,28 +9,23 @@ import (
 	checkutil "github.com/leihenshang/http-little-toy/common/utils/net-util"
 )
 
-func GetHttpMethods() []string {
-	return []string{
-		http.MethodGet,
-		http.MethodHead,
-		http.MethodPost,
-		http.MethodPut,
-		http.MethodPatch,
-		http.MethodDelete,
-		// http.MethodConnect,
-		// http.MethodOptions,
-		// http.MethodTrace,
-	}
+var httpMethodMap = map[string]struct{}{
+	http.MethodGet:    {},
+	http.MethodHead:   {},
+	http.MethodPost:   {},
+	http.MethodPut:    {},
+	http.MethodPatch:  {},
+	http.MethodDelete: {},
+	// http.MethodConnect,
+	// http.MethodOptions,
+	// http.MethodTrace,
 }
 
 func CheckHttpMethod(method string) error {
-	for _, v := range GetHttpMethods() {
-		if v == method {
-			return nil
-		}
+	if _, ok := httpMethodMap[method]; ok {
+		return nil
 	}
-
-	return errors.New(fmt.Sprintf("%s is not in %s.", method, fmt.Sprintf("%v", GetHttpMethods())))
+	return errors.New(fmt.Sprintf("%s is not in %s.", method, fmt.Sprintf("%v", httpMethodMap)))
 }
 
 func CalculateHttpHeadersSize(headers http.Header) (result int64) {
