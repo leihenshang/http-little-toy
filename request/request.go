@@ -108,16 +108,15 @@ func HandleReq(_ context.Context, client *http.Client, reqObj data.Request) (res
 	}
 	req.Header.Set("User-Agent", fmt.Sprintf("%s/%s", data.AppName, data.Version))
 
-	if len(reqObj.Header) > 0 {
-		for _, v := range reqObj.Header {
-			temp := strings.SplitN(v, ":", 2)
-			if len(temp) == 2 {
-				req.Header.Add(temp[0], temp[1])
-			} else {
-				fmt.Printf("split header err,value:%+v,split len:%+v", v, len(temp))
-			}
+	for _, v := range reqObj.Header {
+		temp := strings.SplitN(v, ":", 2)
+		if len(temp) == 2 {
+			req.Header.Add(temp[0], temp[1])
+		} else {
+			fmt.Printf("split header err,value:%+v,split len:%v", v, len(temp))
 		}
 	}
+
 	start := time.Now()
 	resp, err := client.Do(req)
 	if err != nil {
@@ -130,7 +129,8 @@ func HandleReq(_ context.Context, client *http.Client, reqObj data.Request) (res
 		}
 
 	}()
-	body, err := io.ReadAll(resp.Body)
+
+	rawBody, err = io.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Println("an error occurred doing request:", err)
 	}
@@ -140,19 +140,15 @@ func HandleReq(_ context.Context, client *http.Client, reqObj data.Request) (res
 		headerSize = int(httputil.CalculateHttpHeadersSize(resp.Header))
 	}
 
-	//持续时间
 	duration = time.Since(start)
 
 	if resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusCreated {
-		respSize = len(body) + headerSize
+		respSize = len(rawBody) + headerSize
 	} else if resp.StatusCode == http.StatusMovedPermanently || resp.StatusCode == http.StatusTemporaryRedirect {
 		respSize = int(resp.ContentLength) + headerSize
 	} else {
 		err = errors.New(fmt.Sprint("received status code", resp.StatusCode, "header", resp.Header, "content", string(rawBody)))
 	}
-
-	//保存原始数据
-	rawBody = body
 
 	return
 }
