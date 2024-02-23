@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	timeUtil "github.com/leihenshang/http-little-toy/common/utils/time-util"
 	"io/fs"
 	"log"
 	"os"
@@ -29,7 +30,7 @@ func NewMyLog() *MyLog {
 	}
 }
 
-func createLog(LogDir string) (f *os.File, err error) {
+func logInit(LogDir string) (f *os.File, err error) {
 	logDir, logDirErr := fileUtil.IsExisted(LogDir)
 	if logDirErr != nil {
 		err = errors.New(fmt.Sprintf("an error occurred while get log directory information. err:%+v \n", logDirErr))
@@ -44,7 +45,7 @@ func createLog(LogDir string) (f *os.File, err error) {
 		}
 	}
 
-	logName := fmt.Sprintf("httpLittleToy-%s.log", time.Now().Format("20060102150405"))
+	logName := fmt.Sprintf("httpLittleToy-%s.log", time.Now().Format(timeUtil.DateTimeFormat))
 	logPath := path.Join(LogDir, logName)
 	logFile, logErr := os.OpenFile(logPath, os.O_RDWR|os.O_CREATE, fs.ModePerm)
 	if logErr != nil {
@@ -56,35 +57,34 @@ func createLog(LogDir string) (f *os.File, err error) {
 	return
 }
 
-// LogStart start log
-func (m *MyLog) LogStart(ctx context.Context, logDir string) (err error) {
-
-	logFile, logErr := createLog(logDir)
+// Start logging
+func (m *MyLog) Start(ctx context.Context, logDir string) (err error) {
+	logFile, logErr := logInit(logDir)
 	if logErr != nil {
 		return logErr
 	}
 
-	go func(logCtx context.Context) {
+	go func() {
 	LOOP:
 		for {
 			select {
 			case l := <-m.logChan:
 				m.MyWait.Done()
-				logData := []byte(time.Now().Format("2006-01-02 15:04:05 "))
+				logData := []byte(time.Now().Format(timeUtil.DateTimeFormat))
 				logData = append(logData, l...)
 				logData = append(logData, []byte("\n")...)
 				_, lErr := logFile.Write(logData)
 				if lErr != nil {
-					log.Printf("[LogStart] write log err:%+v\n", lErr)
+					log.Printf("[Start] write log err:%+v\n", lErr)
 				}
-			case <-logCtx.Done():
+			case <-ctx.Done():
 				break LOOP
 			}
 
 		}
 
 		logFile.Close()
-	}(ctx)
+	}()
 
 	return
 }

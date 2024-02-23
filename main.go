@@ -95,7 +95,7 @@ func main() {
 	defer logCancel()
 	mLog = mylog.NewMyLog()
 	if requestSample.Params.Log {
-		logErr := mLog.LogStart(logCtx, data.LogDir)
+		logErr := mLog.Start(logCtx, data.LogDir)
 		if logErr != nil {
 			log.Fatal(logErr)
 		}
