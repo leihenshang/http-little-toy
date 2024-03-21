@@ -2,18 +2,16 @@ package file_util
 
 import "os"
 
-func IsExisted(path string) (existed bool, err error) {
-	_, err = os.Stat(path)
-	if err != nil {
+func IsFileExisted(name string) (existed bool) {
+	if _, err := os.Stat(name); err != nil {
 		if os.IsExist(err) {
-			return true, nil
+			return true
 		}
 
 		if os.IsNotExist(err) {
-			return false, nil
+			return false
 		}
-
 	}
 
-	return false, err
+	return false
 }

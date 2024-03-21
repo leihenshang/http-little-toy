@@ -4,13 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	timeUtil "github.com/leihenshang/http-little-toy/common/utils/time-util"
 	"io/fs"
 	"log"
 	"os"
 	"path"
 	"sync"
 	"time"
+
+	timeUtil "github.com/leihenshang/http-little-toy/common/utils/time-util"
 
 	fileUtil "github.com/leihenshang/http-little-toy/common/utils/file-util"
 )
@@ -31,15 +32,8 @@ func NewMyLog() *MyLog {
 }
 
 func logInit(LogDir string) (f *os.File, err error) {
-	logDir, logDirErr := fileUtil.IsExisted(LogDir)
-	if logDirErr != nil {
-		err = errors.New(fmt.Sprintf("an error occurred while get log directory information. err:%+v \n", logDirErr))
-		return
-	}
-	// 日志目录不存在
-	if logDir == false {
-		dirErr := os.MkdirAll(LogDir, os.ModePerm)
-		if dirErr != nil {
+	if fileUtil.IsFileExisted(LogDir) == false {
+		if dirErr := os.MkdirAll(LogDir, os.ModePerm); dirErr != nil {
 			err = errors.New(fmt.Sprintf("an error occurred while make directory.err:%+v \n", dirErr))
 			return
 		}
