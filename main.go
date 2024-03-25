@@ -58,8 +58,8 @@ func main() {
 	flag.Parse()
 
 	// set up a signal channel to get os interrupt signal from terminal
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, os.Interrupt)
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, os.Interrupt)
 
 	if *helpTips {
 		requestSample.PrintDefault(data.AppName)
@@ -147,7 +147,7 @@ func main() {
 
 					if requestSample.Params.Log {
 						// log write
-						mLog.WriteLog(rawBody)
+						mLog.Write(rawBody)
 					}
 
 				} else {
@@ -177,7 +177,7 @@ func main() {
 			allAggregate.MinReqTime = timeUtil.MinTime(allAggregate.MinReqTime, r.MinReqTime)
 			allAggregate.MaxReqTime = timeUtil.MaxTime(allAggregate.MaxReqTime, r.MaxReqTime)
 			allAggregate.RespNum++
-		case <-sigChan:
+		case <-signalChan:
 			cancel()
 		}
 	}

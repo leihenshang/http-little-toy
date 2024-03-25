@@ -1,6 +1,7 @@
 package mylog
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -32,22 +33,19 @@ func NewMyLog() *MyLog {
 }
 
 func logInit(LogDir string) (f *os.File, err error) {
-	if fileUtil.IsFileExisted(LogDir) == false {
-		if dirErr := os.MkdirAll(LogDir, os.ModePerm); dirErr != nil {
-			err = errors.New(fmt.Sprintf("an error occurred while make directory.err:%+v \n", dirErr))
+	if !fileUtil.IsFileExisted(LogDir) {
+		if err = os.MkdirAll(LogDir, os.ModePerm); err != nil {
+			err = errors.New(fmt.Sprintf("an error occurred while make directory.err:%v \n", err))
 			return
 		}
 	}
 
 	logName := fmt.Sprintf("httpLittleToy-%s.log", time.Now().Format(timeUtil.DateTimeFormat))
 	logPath := path.Join(LogDir, logName)
-	logFile, logErr := os.OpenFile(logPath, os.O_RDWR|os.O_CREATE, fs.ModePerm)
-	if logErr != nil {
-		err = errors.New(fmt.Sprintf("an error occurred while create log file.err:%+v \n", logErr))
-		return
+	if f, err = os.OpenFile(logPath, os.O_RDWR|os.O_CREATE, fs.ModePerm); err != nil {
+		err = errors.New(fmt.Sprintf("an error occurred while create log file.err:%v \n", err))
 	}
 
-	f = logFile
 	return
 }
 
@@ -64,12 +62,12 @@ func (m *MyLog) Start(ctx context.Context, logDir string) (err error) {
 			select {
 			case l := <-m.logChan:
 				m.MyWait.Done()
-				logData := []byte(time.Now().Format(timeUtil.DateTimeFormat))
-				logData = append(logData, l...)
-				logData = append(logData, []byte("\n")...)
-				_, lErr := logFile.Write(logData)
-				if lErr != nil {
-					log.Printf("[Start] write log err:%+v\n", lErr)
+				var buf bytes.Buffer
+				buf.WriteString(time.Now().Format(timeUtil.DateTimeFormat))
+				buf.Write(l)
+				buf.WriteString("\n")
+				if _, err = logFile.Write(buf.Bytes()); err != nil {
+					log.Printf("[Start] write log err:%v\n", err)
 				}
 			case <-ctx.Done():
 				break LOOP
@@ -83,7 +81,6 @@ func (m *MyLog) Start(ctx context.Context, logDir string) (err error) {
 	return
 }
 
-// WriteLog write a log information
-func (m *MyLog) WriteLog(l []byte) {
+func (m *MyLog) Write(l []byte) {
 	m.logChan <- l
 }
