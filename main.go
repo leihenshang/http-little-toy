@@ -91,13 +91,12 @@ func main() {
 		log.Fatal(validErr)
 	}
 
-	logCtx, logCancel := context.WithCancel(context.TODO())
+	logCtx, logCancel := context.WithCancel(context.Background())
 	defer logCancel()
 	mLog = mylog.NewMyLog()
 	if requestSample.Params.Log {
-		logErr := mLog.Start(logCtx, data.LogDir)
-		if logErr != nil {
-			log.Fatal(logErr)
+		if err := mLog.Start(logCtx, data.LogDir); err != nil {
+			log.Fatal(err)
 		}
 	}
 
