@@ -77,15 +77,15 @@ type Params struct {
 	CaCert string `json:"caCert"`
 }
 
-//RequestSample 请求模板对象
+// RequestSample 请求模板对象
 type RequestSample struct {
 	// ExecuteCount uint
 	Params  Params
 	Request Request
 }
 
-//Valid 验证请求对象
-func (r *Request) Valid() (err error) {
+// Validate 验证请求对象
+func (r *Request) Validate() (err error) {
 	// 检查 url 格式
 	if urlErr := httputil.CheckUrl(r.Url); urlErr != nil {
 		return urlErr
@@ -99,8 +99,8 @@ func (r *Request) Valid() (err error) {
 	return
 }
 
-//ParseParams 解析参数
-func (r *RequestSample) ParseParams() (reqObj Request, err error) {
+// ParseParams 解析参数
+func (r *RequestSample) ParseParams() (req Request, err error) {
 
 	if r.Params.RequestFile == "" && r.Params.Url == "" {
 		err = errors.New("the URL cannot be empty.Use the \"-u\" or \"-f\" parameter to set the URL")
@@ -112,33 +112,28 @@ func (r *RequestSample) ParseParams() (reqObj Request, err error) {
 		return
 	}
 
-	// 默认请求文件优先级最高
 	if r.Params.RequestFile != "" {
 		log.Printf("ParseParams: use request file: %s \n", r.Params.RequestFile)
-		fileBytes, readErr := os.ReadFile(r.Params.RequestFile)
-		if err != nil {
-			err = errors.New("an error occurred reading the 'request_sample.json' file.err:" + readErr.Error())
+		fileBytes, fileErr := os.ReadFile(r.Params.RequestFile)
+		if fileErr != nil {
+			err = errors.New("an error occurred reading the 'request_sample.json' file.err:" + fileErr.Error())
 			return
 		}
-		unmarshalErr := json.Unmarshal(fileBytes, &r)
-		if unmarshalErr != nil {
-			err = errors.New("unmarshal err: " + unmarshalErr.Error())
-			return
-		}
-		// 请求文件参数
 
-		reqObj.Url = r.Request.Url
-		reqObj.Method = r.Request.Method
-		reqObj.Body = r.Request.Body
-		reqObj.Header = r.Request.Header
+		if err = json.Unmarshal(fileBytes, &r); err != nil {
+			return
+		}
+
+		req.Url = r.Request.Url
+		req.Method = r.Request.Method
+		req.Body = r.Request.Body
+		req.Header = r.Request.Header
 
 	} else {
-		// 命令行参数
-
-		reqObj.Url = r.Params.Url
-		reqObj.Method = r.Params.Method
-		reqObj.Body = r.Params.Body
-		reqObj.Header = r.Params.Header
+		req.Url = r.Params.Url
+		req.Method = r.Params.Method
+		req.Body = r.Params.Body
+		req.Header = r.Params.Header
 	}
 
 	return
@@ -157,4 +152,16 @@ func (r *RequestSample) PrintDefault(appName string) {
 			return flag.DefValue
 		}()+".")
 	})
+}
+
+func (r *RequestSample) TipsAndHelp(helpTips, version bool) {
+	if helpTips {
+		r.PrintDefault(AppName)
+		os.Exit(0)
+	}
+
+	if version {
+		fmt.Printf("%s v%s \n", AppName, Version)
+		os.Exit(0)
+	}
 }

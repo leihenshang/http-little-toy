@@ -14,26 +14,20 @@ import (
 	"github.com/leihenshang/http-little-toy/common/mylog"
 	timeUtil "github.com/leihenshang/http-little-toy/common/utils/time-util"
 	"github.com/leihenshang/http-little-toy/data"
-	reqObj "github.com/leihenshang/http-little-toy/request"
+	toyrequest "github.com/leihenshang/http-little-toy/request"
 	"github.com/leihenshang/http-little-toy/sample"
 )
 
 var (
-	// response channel
 	respChan chan data.RequestStats
-	// log
-	mLog *mylog.MyLog
-	// request sample object
-	requestSample = new(data.RequestSample)
+	toyLog   *mylog.ToyLog
+
+	helpTips = flag.Bool("h", false, "show help tips.")
+	version  = flag.Bool("v", false, "show version.")
 )
 
-// help tips
-var helpTips = flag.Bool("h", false, "show help tips.")
-
-// version display
-var version = flag.Bool("v", false, "show app version.")
-
-func init() {
+func initRequestSample() *data.RequestSample {
+	requestSample := new(data.RequestSample)
 	flag.Var(&requestSample.Params.Header, "H", "The http header.")
 	flag.StringVar(&requestSample.Params.Url, "u", "", "The URL you want to test.")
 	flag.StringVar(&requestSample.Params.Method, "M", http.MethodGet, "The http method.")
@@ -52,24 +46,17 @@ func init() {
 	flag.StringVar(&requestSample.Params.ClientCert, "clientCert", "", "clientCert.")
 	flag.StringVar(&requestSample.Params.ClientKey, "clientKey", "", "clientKey.")
 	flag.StringVar(&requestSample.Params.CaCert, "caCert", "", "caCert.")
+	flag.Parse()
+
+	return requestSample
 }
 
 func main() {
-	flag.Parse()
+	requestSample := initRequestSample()
+	requestSample.TipsAndHelp(*helpTips, *version)
 
-	// set up a signal channel to get os interrupt signal from terminal
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt)
-
-	if *helpTips {
-		requestSample.PrintDefault(data.AppName)
-		return
-	}
-
-	if *version {
-		fmt.Printf("%s v%s \n", data.AppName, data.Version)
-		return
-	}
 
 	// generate a request sample
 	if requestSample.Params.GenerateSample {
@@ -81,40 +68,36 @@ func main() {
 	}
 
 	// check params object
-	request, parseErr := requestSample.ParseParams()
-	if parseErr != nil {
-		log.Fatal(parseErr)
-	}
-	// check request object
-	validErr := request.Valid()
-	if validErr != nil {
-		log.Fatal(validErr)
+	request, err := requestSample.ParseParams()
+	if err != nil {
+		log.Fatal(err)
+	} else if err = request.Validate(); err != nil {
+		log.Fatal(err)
 	}
 
 	logCtx, logCancel := context.WithCancel(context.Background())
 	defer logCancel()
-	mLog = mylog.NewMyLog()
+	toyLog = mylog.NewMyLog()
 	if requestSample.Params.Log {
-		if err := mLog.Start(logCtx, data.LogDir); err != nil {
+		if err = toyLog.Start(logCtx, data.LogDir); err != nil {
 			log.Fatal(err)
 		}
 	}
 
-	// init resp channel
 	respChan = make(chan data.RequestStats, requestSample.Params.Thread)
 
 	fmt.Printf("use %d coroutines,duration %d seconds.\n", requestSample.Params.Thread, requestSample.Params.Duration)
 	fmt.Printf("url: %v method:%v header: %v \n", request.Url, request.Method, request.Header)
 	fmt.Println("---------------stats---------------")
 
-	ctx := context.TODO()
+	ctx := context.Background()
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(1e9*(requestSample.Params.Duration)))
 	defer cancel()
 
 	for i := 1; i <= requestSample.Params.Thread; i++ {
 		go func() {
-			httpCtx := context.TODO()
-			client, clientErr := reqObj.GetHttpClient(
+			httpCtx := context.Background()
+			client, clientErr := toyrequest.GetHttpClient(
 				requestSample.Params.KeepAlive,
 				requestSample.Params.Compression,
 				time.Duration(requestSample.Params.TimeOut),
@@ -133,10 +116,10 @@ func main() {
 			for {
 
 				if requestSample.Params.Log {
-					mLog.MyWait.Add(1)
+					toyLog.Wait.Add(1)
 				}
 
-				size, d, rawBody, err := reqObj.HandleReq(httpCtx, client, request)
+				size, d, rawBody, err := toyrequest.HandleReq(httpCtx, client, request)
 				if size > 0 && err == nil {
 					aggregate.Duration += d
 					aggregate.SuccessNum++
@@ -146,7 +129,7 @@ func main() {
 
 					if requestSample.Params.Log {
 						// log write
-						mLog.Write(rawBody)
+						toyLog.Write(rawBody)
 					}
 
 				} else {
@@ -156,7 +139,6 @@ func main() {
 
 				select {
 				case <-ctx.Done():
-					// break circulation
 					break LOOP
 				default:
 				}
@@ -184,7 +166,7 @@ func main() {
 	allAggregate.PrintStats()
 
 	if requestSample.Params.Log {
-		mLog.MyWait.Wait()
+		toyLog.Wait.Wait()
 		d, _ := filepath.Abs(data.LogDir)
 		log.Printf("log files are saves in:%+v \n", d)
 	}

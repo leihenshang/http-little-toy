@@ -17,18 +17,18 @@ import (
 	fileUtil "github.com/leihenshang/http-little-toy/common/utils/file-util"
 )
 
-// MyLog a log object
-type MyLog struct {
-	logChan chan []byte
+// ToyLog a log object
+type ToyLog struct {
+	c chan []byte
 	// a counter
-	MyWait *sync.WaitGroup
+	Wait *sync.WaitGroup
 }
 
-// NewMyLog create a `MyLog` object.
-func NewMyLog() *MyLog {
-	return &MyLog{
-		logChan: make(chan []byte),
-		MyWait:  &sync.WaitGroup{},
+// NewMyLog create a `ToyLog` object.
+func NewMyLog() *ToyLog {
+	return &ToyLog{
+		c:    make(chan []byte),
+		Wait: &sync.WaitGroup{},
 	}
 }
 
@@ -50,7 +50,7 @@ func logInit(LogDir string) (f *os.File, err error) {
 }
 
 // Start logging
-func (m *MyLog) Start(ctx context.Context, logDir string) (err error) {
+func (m *ToyLog) Start(ctx context.Context, logDir string) (err error) {
 	logFile, logErr := logInit(logDir)
 	if logErr != nil {
 		return logErr
@@ -60,8 +60,8 @@ func (m *MyLog) Start(ctx context.Context, logDir string) (err error) {
 	LOOP:
 		for {
 			select {
-			case l := <-m.logChan:
-				m.MyWait.Done()
+			case l := <-m.c:
+				m.Wait.Done()
 				var buf bytes.Buffer
 				buf.WriteString(time.Now().Format(timeUtil.DateTimeFormat))
 				buf.Write(l)
@@ -81,6 +81,6 @@ func (m *MyLog) Start(ctx context.Context, logDir string) (err error) {
 	return
 }
 
-func (m *MyLog) Write(l []byte) {
-	m.logChan <- l
+func (m *ToyLog) Write(l []byte) {
+	m.c <- l
 }
