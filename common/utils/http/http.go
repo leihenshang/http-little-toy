@@ -1,4 +1,4 @@
-package http_util
+package http
 
 import (
 	"errors"
@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"net/url"
 
-	checkutil "github.com/leihenshang/http-little-toy/common/utils/net-util"
+	checkutil "github.com/leihenshang/http-little-toy/common/utils/net"
 )
 
 var httpMethodMap = map[string]struct{}{

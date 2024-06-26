@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	httputil "github.com/leihenshang/http-little-toy/common/utils/http-util"
+	httputil "github.com/leihenshang/http-little-toy/common/utils/http"
 	"github.com/leihenshang/http-little-toy/data"
 
 	"golang.org/x/net/http2"

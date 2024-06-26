@@ -8,8 +8,8 @@ import (
 	"log"
 	"os"
 
-	httputil "github.com/leihenshang/http-little-toy/common/utils/http-util"
-	"github.com/leihenshang/http-little-toy/common/xtype"
+	"github.com/leihenshang/http-little-toy/common/toytype"
+	httputil "github.com/leihenshang/http-little-toy/common/utils/http"
 )
 
 // Request 请求数据
@@ -26,7 +26,7 @@ type Params struct {
 	Url string `json:"-"`
 
 	// header
-	Header xtype.StringSliceX `json:"-"`
+	Header toytype.StringSliceX `json:"-"`
 
 	// body
 	Body string `json:"-"`

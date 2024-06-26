@@ -1,4 +1,4 @@
-package xtype
+package toytype
 
 import "fmt"
 

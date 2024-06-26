@@ -1,4 +1,4 @@
-package mylog
+package toylog
 
 import (
 	"bytes"
@@ -12,9 +12,8 @@ import (
 	"sync"
 	"time"
 
-	timeUtil "github.com/leihenshang/http-little-toy/common/utils/time-util"
-
-	fileUtil "github.com/leihenshang/http-little-toy/common/utils/file-util"
+	timeUtil "github.com/leihenshang/http-little-toy/common/utils/datetime"
+	fileUtil "github.com/leihenshang/http-little-toy/common/utils/file"
 )
 
 // ToyLog a log object

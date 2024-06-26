@@ -1,4 +1,4 @@
-package file_util
+package file
 
 import "os"
 

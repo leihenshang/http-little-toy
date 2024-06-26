@@ -1,7 +1,0 @@
-curl 'https://www.2342342342.net/msg/findAllMsgCount' \
-  -H 'Accept: */*' \
-  -H 'Accept-Language: zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6' \
-  -H 'Connection: keep-alive' \
-  -H 'sec-ch-ua-platform: "macOS"' \
-  --data-raw 'user_code=234234' \
-  --compressed

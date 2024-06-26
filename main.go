@@ -11,16 +11,15 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/leihenshang/http-little-toy/common/mylog"
-	timeUtil "github.com/leihenshang/http-little-toy/common/utils/time-util"
+	"github.com/leihenshang/http-little-toy/common/toylog"
+	timeUtil "github.com/leihenshang/http-little-toy/common/utils/datetime"
 	"github.com/leihenshang/http-little-toy/data"
 	toyrequest "github.com/leihenshang/http-little-toy/request"
-	"github.com/leihenshang/http-little-toy/sample"
 )
 
 var (
 	respChan chan data.RequestStats
-	toyLog   *mylog.ToyLog
+	toyLog   *toylog.ToyLog
 
 	helpTips = flag.Bool("h", false, "show help tips.")
 	version  = flag.Bool("v", false, "show version.")
@@ -38,7 +37,6 @@ func initRequestSample() *data.RequestSample {
 	flag.BoolVar(&requestSample.Params.KeepAlive, "keepAlive", true, "Use keep-alive for http protocol.")
 	flag.BoolVar(&requestSample.Params.Compression, "compression", true, "Use keep-alive for http protocol.")
 	flag.StringVar(&requestSample.Params.RequestFile, "f", "", "specify the request definition file.")
-	flag.BoolVar(&requestSample.Params.GenerateSample, "gen", false, "generate the request definition file template to the current directory.")
 	flag.IntVar(&requestSample.Params.TimeOut, "timeOut", 1000, "the time out to wait response.")
 	flag.BoolVar(&requestSample.Params.SkipVerify, "skipVerify", false, "TLS skipVerify.")
 	flag.BoolVar(&requestSample.Params.AllowRedirects, "allowRedirects", true, "allowRedirects.")
@@ -58,16 +56,6 @@ func main() {
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt)
 
-	// generate a request sample
-	if requestSample.Params.GenerateSample {
-		err := sample.GenerateRequestFileV1("./request_sample.json", requestSample)
-		if err != nil {
-			log.Fatal(err)
-		}
-		return
-	}
-
-	// check params object
 	request, err := requestSample.ParseParams()
 	if err != nil {
 		log.Fatal(err)
@@ -77,7 +65,7 @@ func main() {
 
 	logCtx, logCancel := context.WithCancel(context.Background())
 	defer logCancel()
-	toyLog = mylog.NewMyLog()
+	toyLog = toylog.NewMyLog()
 	if requestSample.Params.Log {
 		if err = toyLog.Start(logCtx, data.LogDir); err != nil {
 			log.Fatal(err)
