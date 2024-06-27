@@ -1,38 +1,14 @@
 # http-little-toy
 
-一个简单的 `http` 并发测试工具。
+## 简介-INTRODUCTION
 
-#### README.md
-
-[⭐️README.MD⭐️ En](README.en.md)
-
-#### 仓库地址
-
-如果喜欢就star⭐️一下吧，让它沉睡在你的收藏库里。
-
- [https://github.com/leihenshang/http-little-toy](https://github.com/leihenshang/http-little-toy)
-
- [https://gitee.com/leihenshang/http-little-toy](https://gitee.com/leihenshang/http-little-toy)
-
-#### 介绍
-
-灵感来源于 `github` 上各种版本的 `wrk` http并发测试工具。
-
-造轮子好玩吗？
-真好玩！
-orz.
-#### 特性
-
-- [x] 命令行中加入设置 `header` 头
-
-- [x] 命令行中加入设置 `body` 负载
-
-- [x] 完善一下 `request.json` 请求文件的逻辑
-
-- [x] 添加记录响应数据日志的功能，方便分析
-
-- [x] 新增 `http agent` 识别tag
-
+- 一个简单的 `http` 并发测试工具。
+  - A simple HTTP concurrency testing tool.
+- 如果喜欢它就star⭐️一下吧，让它沉睡在你的收藏库里。
+  - If you like it,please star it and let it sleep in your repository!
+- 造轮子真好玩！orz.
+  - building wheel is very funny! orz!
+ 
 #### 使用
 
 一般使用 -d 控制请求时间(秒),-t 控制线程数（当做用户数量来理解）就可以了。
