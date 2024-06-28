@@ -7,13 +7,9 @@
 - 如果喜欢它就star⭐️一下吧，让它沉睡在你的收藏库里。
   - If you like it,please star it and let it sleep in your repository!
 - 造轮子真好玩！orz.
-  - building wheel is very funny! orz!
+  - Building wheel is very funny! orz!
  
-#### 使用
-
-一般使用 -d 控制请求时间(秒),-t 控制线程数（当做用户数量来理解）就可以了。
-
-还能使用request.json文件，你不用重新编写命令参数了,不过可能还有点小问题，在完善中。
+#### 使用-TUTORIAL
 
 ```bash
 $ http-little-toy -h
@@ -35,10 +31,6 @@ Options:
                  Use keep-alive for http protocol. --default=true.
         -d 
                  Duration of request.The unit is seconds. --default=0.
-        -f 
-                 specify the request definition file. --default="".
-        -gen 
-                 generate the request definition file template to the current directory. --default=false.
         -h 
                  show help tips. --default=false.
         -keepAlive 
@@ -121,8 +113,6 @@ go build -o bin/http-little-toy.exe
 
 ```bash
 # 使用test-server 测试
-
-
  go run . -u http://localhost:9090 -H aaa:bbbb -H ccc:ddd -body "hhhhh2333333" -d 2 -t 1
 ```
 

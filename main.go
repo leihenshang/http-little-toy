@@ -36,7 +36,6 @@ func initRequestSample() *data.RequestSample {
 	flag.IntVar(&requestSample.Params.Thread, "t", 10, "Number of threads.")
 	flag.BoolVar(&requestSample.Params.KeepAlive, "keepAlive", true, "Use keep-alive for http protocol.")
 	flag.BoolVar(&requestSample.Params.Compression, "compression", true, "Use keep-alive for http protocol.")
-	flag.StringVar(&requestSample.Params.RequestFile, "f", "", "specify the request definition file.")
 	flag.IntVar(&requestSample.Params.TimeOut, "timeOut", 1000, "the time out to wait response.")
 	flag.BoolVar(&requestSample.Params.SkipVerify, "skipVerify", false, "TLS skipVerify.")
 	flag.BoolVar(&requestSample.Params.AllowRedirects, "allowRedirects", true, "allowRedirects.")

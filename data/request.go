@@ -1,11 +1,9 @@
 package data
 
 import (
-	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/leihenshang/http-little-toy/common/toytype"
@@ -48,9 +46,6 @@ type Params struct {
 
 	// 启用压缩
 	Compression bool `json:"compression"`
-
-	// 请求文件
-	RequestFile string `json:"-"`
 
 	// 创建请求文件模板
 	GenerateSample bool `json:"-"`
@@ -101,40 +96,15 @@ func (r *Request) Validate() (err error) {
 
 // ParseParams 解析参数
 func (r *RequestSample) ParseParams() (req Request, err error) {
-
-	if r.Params.RequestFile == "" && r.Params.Url == "" {
+	if r.Params.Url == "" {
 		err = errors.New("the URL cannot be empty.Use the \"-u\" or \"-f\" parameter to set the URL")
 		return
 	}
 
-	if r.Params.RequestFile != "" && r.Params.Url != "" {
-		err = errors.New("the \"-u\" or \"-f\" parameter can not exist the same time")
-		return
-	}
-
-	if r.Params.RequestFile != "" {
-		log.Printf("ParseParams: use request file: %s \n", r.Params.RequestFile)
-		fileBytes, fileErr := os.ReadFile(r.Params.RequestFile)
-		if fileErr != nil {
-			err = errors.New("an error occurred reading the 'request_sample.json' file.err:" + fileErr.Error())
-			return
-		}
-
-		if err = json.Unmarshal(fileBytes, &r); err != nil {
-			return
-		}
-
-		req.Url = r.Request.Url
-		req.Method = r.Request.Method
-		req.Body = r.Request.Body
-		req.Header = r.Request.Header
-
-	} else {
-		req.Url = r.Params.Url
-		req.Method = r.Params.Method
-		req.Body = r.Params.Body
-		req.Header = r.Params.Header
-	}
+	req.Url = r.Params.Url
+	req.Method = r.Params.Method
+	req.Body = r.Params.Body
+	req.Header = r.Params.Header
 
 	return
 }
