@@ -2,13 +2,15 @@ package toytype
 
 import "fmt"
 
-type StringSliceX []string
+type MyStrSlice []string
 
-func (s *StringSliceX) String() string {
-	return fmt.Sprintf("%v", []string(*s))
+func (s MyStrSlice) String() string {
+	var newS []string
+	copy(newS, s)
+	return fmt.Sprintf("%v", newS)
 }
 
-func (s *StringSliceX) Set(value string) error {
-	*s = append(*s, value)
+func (s MyStrSlice) Set(value string) error {
+	s = append(s, value)
 	return nil
 }

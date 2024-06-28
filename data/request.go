@@ -26,7 +26,7 @@ type Params struct {
 	Url string `json:"-"`
 
 	// header
-	Header toytype.StringSliceX `json:"-"`
+	Header toytype.MyStrSlice `json:"-"`
 
 	// body
 	Body string `json:"-"`

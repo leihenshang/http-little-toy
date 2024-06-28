@@ -28,32 +28,17 @@ func CheckHttpMethod(method string) error {
 	return errors.New(fmt.Sprintf("%s is not in %s.", method, fmt.Sprintf("%v", httpMethodMap)))
 }
 
-func CalculateHttpHeadersSize(headers http.Header) (result int64) {
-	result = 0
-
-	for k, v := range headers {
-		result += int64(len(k) + len(": \r\n"))
-		for _, s := range v {
-			result += int64(len(s))
-		}
-	}
-
-	result += int64(len("\r\n"))
-
-	return result
-}
-
 func CheckUrl(urlAddr string) (err error) {
-	urlObj, urlErr := url.Parse(urlAddr)
+	url, urlErr := url.Parse(urlAddr)
 	if urlErr != nil {
 		return errors.New("an error occurred while parsing the url," + urlErr.Error())
 	}
 
-	if urlObj.Scheme != "http" && urlObj.Scheme != "https" {
-		return errors.New("url schema illegal:" + urlObj.Scheme)
+	if url.Scheme != "http" && url.Scheme != "https" {
+		return errors.New("url schema illegal:" + url.Scheme)
 	}
 
-	portErr := checkutil.ConnectivityTest(fmt.Sprintf("%s:%s", urlObj.Hostname(), urlObj.Port()))
+	portErr := checkutil.ConnectivityTest(fmt.Sprintf("%s:%s", url.Hostname(), url.Port()))
 	if portErr != nil {
 		return portErr
 	}

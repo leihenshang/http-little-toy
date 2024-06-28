@@ -12,7 +12,6 @@ import (
 	"strings"
 	"time"
 
-	httputil "github.com/leihenshang/http-little-toy/common/utils/http"
 	"github.com/leihenshang/http-little-toy/data"
 
 	"golang.org/x/net/http2"
@@ -92,16 +91,12 @@ func GetHttpClient(
 	return client, nil
 }
 
-func HandleReq(_ context.Context, client *http.Client, reqObj data.Request) (respSize int, duration time.Duration, rawBody []byte, err error) {
+func HandleReq(_ context.Context, client *http.Client, reqObj data.Request,
+) (respSize int, duration time.Duration, bodyBytes []byte, err error) {
 	respSize = -1
 	duration = -1
 
-	var reader io.Reader
-	if reqObj.Body != "" {
-		reader = strings.NewReader(reqObj.Body)
-	}
-
-	req, err := http.NewRequest(reqObj.Method, reqObj.Url, reader)
+	req, err := http.NewRequest(reqObj.Method, reqObj.Url, strings.NewReader(reqObj.Body))
 	if err != nil {
 		fmt.Printf("new request failed, err:%v\n", err)
 		return
@@ -109,11 +104,10 @@ func HandleReq(_ context.Context, client *http.Client, reqObj data.Request) (res
 	req.Header.Set("User-Agent", fmt.Sprintf("%s/%s", data.AppName, data.Version))
 
 	for _, v := range reqObj.Header {
-		temp := strings.SplitN(v, ":", 2)
-		if len(temp) == 2 {
+		if temp := strings.SplitN(v, ":", 2); len(temp) == 2 {
 			req.Header.Add(temp[0], temp[1])
 		} else {
-			fmt.Printf("split header err,value:%+v,split len:%v", v, len(temp))
+			fmt.Printf("split header error,value:%+v,split len:%v", v, len(temp))
 		}
 	}
 
@@ -122,6 +116,7 @@ func HandleReq(_ context.Context, client *http.Client, reqObj data.Request) (res
 	if err != nil {
 		return
 	}
+	duration = time.Since(start)
 
 	defer func() {
 		if resp != nil && resp.Body != nil {
@@ -130,25 +125,34 @@ func HandleReq(_ context.Context, client *http.Client, reqObj data.Request) (res
 
 	}()
 
-	rawBody, err = io.ReadAll(resp.Body)
+	bodyBytes, err = io.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Println("an error occurred doing request(io readAll):", err)
 	}
 
 	headerSize := 0
 	if len(resp.Header) > 0 {
-		headerSize = int(httputil.CalculateHttpHeadersSize(resp.Header))
+		headerSize = int(calculateHttpHeadersSize(resp.Header))
 	}
 
-	duration = time.Since(start)
-
 	if resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusCreated {
-		respSize = len(rawBody) + headerSize
+		respSize = len(bodyBytes) + headerSize
 	} else if resp.StatusCode == http.StatusMovedPermanently || resp.StatusCode == http.StatusTemporaryRedirect {
 		respSize = int(resp.ContentLength) + headerSize
 	} else {
-		err = errors.New(fmt.Sprint("http-code:", resp.StatusCode, ",header: ", resp.Header, ",content: ", string(rawBody)))
+		err = errors.New(fmt.Sprint("http-code:", resp.StatusCode, ",header: ", resp.Header, ",content: ", string(bodyBytes)))
 	}
 
 	return
+}
+
+func calculateHttpHeadersSize(headers http.Header) (result int64) {
+	for k, v := range headers {
+		result += int64(len(k) + len(": \r\n"))
+		for _, s := range v {
+			result += int64(len(s))
+		}
+	}
+	result += int64(len("\r\n"))
+	return result
 }

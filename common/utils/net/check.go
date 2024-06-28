@@ -9,7 +9,7 @@ import (
 
 // ConnectivityTest 检查地址的连接性
 func ConnectivityTest(ipPorts string) (err error) {
-	netRes, err := net.DialTimeout("tcp", ipPorts, time.Second*3)
+	netRes, err := net.DialTimeout("tcp", ipPorts, time.Second*5)
 	if err != nil {
 		return err
 	}
