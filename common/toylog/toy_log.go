@@ -39,7 +39,7 @@ func logInit(LogDir string) (f *os.File, err error) {
 		}
 	}
 
-	logName := fmt.Sprintf("httpLittleToy-%s.log", time.Now().Format(timeUtil.DateTimeFormat))
+	logName := fmt.Sprintf("httpLittleToy-%s.log", time.Now().Format(timeUtil.DateTimeFormatCustom))
 	logPath := path.Join(LogDir, logName)
 	if f, err = os.OpenFile(logPath, os.O_RDWR|os.O_CREATE, fs.ModePerm); err != nil {
 		err = errors.New(fmt.Sprintf("an error occurred while create log file.err:%v \n", err))
