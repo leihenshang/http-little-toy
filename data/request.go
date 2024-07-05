@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/leihenshang/http-little-toy/common/toytype"
 	httputil "github.com/leihenshang/http-little-toy/common/utils/http"
 )
 
@@ -24,7 +23,7 @@ type Params struct {
 	Url string `json:"-"`
 
 	// header
-	Header toytype.MyStrSlice `json:"-"`
+	Header MyStrSlice `json:"-"`
 
 	// body
 	Body string `json:"-"`
@@ -134,4 +133,15 @@ func (r *RequestSample) TipsAndHelp(helpTips, version bool) {
 		fmt.Printf("%s v%s \n", AppName, Version)
 		os.Exit(0)
 	}
+}
+
+type MyStrSlice []string
+
+func (s *MyStrSlice) String() string {
+	return fmt.Sprintf("%v", *s)
+}
+
+func (s *MyStrSlice) Set(value string) error {
+	*s = append(*s, value)
+	return nil
 }
