@@ -1,4 +1,4 @@
-package toylog
+package common
 
 import (
 	"bytes"
@@ -11,8 +11,6 @@ import (
 	"path"
 	"sync"
 	"time"
-
-	timeUtil "github.com/leihenshang/http-little-toy/common/utils/datetime"
 )
 
 // ToyLog a log object
@@ -38,7 +36,7 @@ func logInit(LogDir string) (f *os.File, err error) {
 		}
 	}
 
-	logName := fmt.Sprintf("http-little-toy-%s.log", time.Now().Format(timeUtil.DateTimeFormatCustom))
+	logName := fmt.Sprintf("http-little-toy-%s.log", time.Now().Format(DateTimeFormatCustom))
 	logPath := path.Join(LogDir, logName)
 	if f, err = os.OpenFile(logPath, os.O_RDWR|os.O_CREATE, fs.ModePerm); err != nil {
 		err = errors.New(fmt.Sprintf("an error occurred while create log file.err:%v \n", err))
@@ -63,7 +61,7 @@ func (m *ToyLog) Start(ctx context.Context, logDir string) (err error) {
 			case l := <-m.c:
 				m.Wait.Done()
 				var buf bytes.Buffer
-				buf.WriteString(time.Now().Format(timeUtil.DateTimeFormat))
+				buf.WriteString(time.Now().Format(DateTimeFormat))
 				buf.Write(l)
 				buf.WriteString("\n")
 				if _, err = logFile.Write(buf.Bytes()); err != nil {

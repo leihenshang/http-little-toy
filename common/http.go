@@ -1,12 +1,10 @@
-package http
+package common
 
 import (
 	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
-
-	checkutil "github.com/leihenshang/http-little-toy/common/utils/net"
 )
 
 var httpMethodMap = map[string]struct{}{
@@ -38,7 +36,7 @@ func CheckUrl(urlAddr string) (err error) {
 		return errors.New("url schema illegal:" + url.Scheme)
 	}
 
-	portErr := checkutil.ConnectivityTest(fmt.Sprintf("%s:%s", url.Hostname(), url.Port()))
+	portErr := ConnectivityTest(fmt.Sprintf("%s:%s", url.Hostname(), url.Port()))
 	if portErr != nil {
 		return portErr
 	}

@@ -11,15 +11,14 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/leihenshang/http-little-toy/common/toylog"
-	timeUtil "github.com/leihenshang/http-little-toy/common/utils/datetime"
+	"github.com/leihenshang/http-little-toy/common"
 	"github.com/leihenshang/http-little-toy/data"
 	toyrequest "github.com/leihenshang/http-little-toy/request"
 )
 
 var (
 	respChan chan data.RequestStats
-	toyLog   *toylog.ToyLog
+	toyLog   *common.ToyLog
 
 	helpTips = flag.Bool("h", false, "show help tips.")
 	version  = flag.Bool("v", false, "show version.")
@@ -64,7 +63,7 @@ func main() {
 
 	logCtx, logCancel := context.WithCancel(context.Background())
 	defer logCancel()
-	toyLog = toylog.NewMyLog()
+	toyLog = common.NewMyLog()
 	if requestSample.Params.Log {
 		if err = toyLog.Start(logCtx, data.LogDir); err != nil {
 			log.Fatal(err)
@@ -110,8 +109,8 @@ func main() {
 				if size > 0 && err == nil {
 					aggregate.Duration += d
 					aggregate.SuccessNum++
-					aggregate.MaxReqTime = timeUtil.MaxTime(aggregate.MaxReqTime, d)
-					aggregate.MinReqTime = timeUtil.MinTime(aggregate.MinReqTime, d)
+					aggregate.MaxReqTime = common.MaxTime(aggregate.MaxReqTime, d)
+					aggregate.MinReqTime = common.MinTime(aggregate.MinReqTime, d)
 					aggregate.RespSize += int64(size)
 
 					if requestSample.Params.Log {
@@ -142,8 +141,8 @@ func main() {
 			allAggregate.SuccessNum += r.SuccessNum
 			allAggregate.RespSize += r.RespSize
 			allAggregate.Duration += r.Duration
-			allAggregate.MinReqTime = timeUtil.MinTime(allAggregate.MinReqTime, r.MinReqTime)
-			allAggregate.MaxReqTime = timeUtil.MaxTime(allAggregate.MaxReqTime, r.MaxReqTime)
+			allAggregate.MinReqTime = common.MinTime(allAggregate.MinReqTime, r.MinReqTime)
+			allAggregate.MaxReqTime = common.MaxTime(allAggregate.MaxReqTime, r.MaxReqTime)
 			allAggregate.RespNum++
 		case <-signalChan:
 			cancel()

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	httputil "github.com/leihenshang/http-little-toy/common/utils/http"
+	"github.com/leihenshang/http-little-toy/common"
 )
 
 // Request 请求数据
@@ -81,12 +81,12 @@ type RequestSample struct {
 // Validate 验证请求对象
 func (r *Request) Validate() (err error) {
 	// 检查 url 格式
-	if urlErr := httputil.CheckUrl(r.Url); urlErr != nil {
+	if urlErr := common.CheckUrl(r.Url); urlErr != nil {
 		return urlErr
 	}
 
 	// 检查 method
-	if methodErr := httputil.CheckHttpMethod(r.Method); methodErr != nil {
+	if methodErr := common.CheckHttpMethod(r.Method); methodErr != nil {
 		return methodErr
 	}
 
