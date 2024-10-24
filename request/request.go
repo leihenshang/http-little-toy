@@ -34,7 +34,7 @@ func GetHttpClient(
 	disableCompression := !compression
 
 	client.Transport = &http.Transport{
-		ResponseHeaderTimeout: time.Millisecond * timeout,
+		ResponseHeaderTimeout: time.Second * timeout,
 		DisableCompression:    disableCompression,
 		DisableKeepAlives:     disableKeepAlive,
 		TLSClientConfig:       &tls.Config{InsecureSkipVerify: skipVerify},

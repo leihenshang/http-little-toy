@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"time"
 
 	"github.com/leihenshang/http-little-toy/common"
@@ -32,7 +33,7 @@ func initRequestSample() *data.RequestSample {
 	flag.IntVar(&requestSample.Params.Thread, "t", 10, "Number of threads.")
 	flag.BoolVar(&requestSample.Params.KeepAlive, "keepAlive", true, "Use keep-alive for http protocol.")
 	flag.BoolVar(&requestSample.Params.Compression, "compression", true, "Use keep-alive for http protocol.")
-	flag.IntVar(&requestSample.Params.TimeOut, "timeOut", 1000, "the time out to wait response.")
+	flag.IntVar(&requestSample.Params.TimeOut, "timeOut", 5, "the time out to wait response.the unit is seconds.")
 	flag.BoolVar(&requestSample.Params.SkipVerify, "skipVerify", false, "TLS skipVerify.")
 	flag.BoolVar(&requestSample.Params.AllowRedirects, "allowRedirects", true, "allowRedirects.")
 	flag.BoolVar(&requestSample.Params.UseHttp2, "useHttp2", false, "useHttp2.")
@@ -59,13 +60,10 @@ func main() {
 	}
 
 	respChan = make(chan data.RequestStats, requestSample.Params.Thread)
-
 	fmt.Printf("use %d coroutines,duration %d seconds.\n", requestSample.Params.Thread, requestSample.Params.Duration)
-	fmt.Printf("url: %v method:%v header: %v \n", request.Url, request.Method, request.Header)
+	fmt.Printf("%s %s header: %v \n", request.Method, request.Url, strings.Join(request.Header, "\n"))
 	fmt.Println("---------------stats---------------")
-
-	ctx := context.Background()
-	ctx, cancel := context.WithTimeout(ctx, time.Duration(1e9*(requestSample.Params.Duration)))
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(requestSample.Params.Duration)*time.Second)
 	defer cancel()
 
 	for i := 1; i <= requestSample.Params.Thread; i++ {
