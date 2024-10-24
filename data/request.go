@@ -28,9 +28,6 @@ type Params struct {
 	// body
 	Body string `json:"-"`
 
-	// 日志文件
-	Log bool `json:"log"`
-
 	// http 方法
 	Method string `json:"-"`
 

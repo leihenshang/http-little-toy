@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"time"
 
 	"github.com/leihenshang/http-little-toy/common"
@@ -18,7 +17,6 @@ import (
 
 var (
 	respChan chan data.RequestStats
-	toyLog   *common.ToyLog
 
 	helpTips = flag.Bool("h", false, "show help tips.")
 	version  = flag.Bool("v", false, "show version.")
@@ -30,7 +28,6 @@ func initRequestSample() *data.RequestSample {
 	flag.StringVar(&requestSample.Params.Url, "u", "", "The URL you want to test.")
 	flag.StringVar(&requestSample.Params.Method, "M", http.MethodGet, "The http method.")
 	flag.StringVar(&requestSample.Params.Body, "body", "", "The http body.")
-	flag.BoolVar(&requestSample.Params.Log, "log", false, "Log the request response to file. default: './log'")
 	flag.IntVar(&requestSample.Params.Duration, "d", 10, "Duration of request.The unit is seconds.")
 	flag.IntVar(&requestSample.Params.Thread, "t", 10, "Number of threads.")
 	flag.BoolVar(&requestSample.Params.KeepAlive, "keepAlive", true, "Use keep-alive for http protocol.")
@@ -59,15 +56,6 @@ func main() {
 		log.Fatal(err)
 	} else if err = request.Validate(); err != nil {
 		log.Fatal(err)
-	}
-
-	logCtx, logCancel := context.WithCancel(context.Background())
-	defer logCancel()
-	toyLog = common.NewMyLog()
-	if requestSample.Params.Log {
-		if err = toyLog.Start(logCtx, data.LogDir); err != nil {
-			log.Fatal(err)
-		}
 	}
 
 	respChan = make(chan data.RequestStats, requestSample.Params.Thread)
@@ -100,23 +88,13 @@ func main() {
 			aggregate := data.RequestStats{MinReqTime: time.Hour}
 		LOOP:
 			for {
-
-				if requestSample.Params.Log {
-					toyLog.Wait.Add(1)
-				}
-
-				size, d, rawBody, err := toyrequest.HandleReq(httpCtx, client, request)
+				size, d, _, err := toyrequest.HandleReq(httpCtx, client, request)
 				if size > 0 && err == nil {
 					aggregate.Duration += d
 					aggregate.SuccessNum++
 					aggregate.MaxReqTime = common.MaxTime(aggregate.MaxReqTime, d)
 					aggregate.MinReqTime = common.MinTime(aggregate.MinReqTime, d)
 					aggregate.RespSize += int64(size)
-
-					if requestSample.Params.Log {
-						// log write
-						toyLog.Write(rawBody)
-					}
 
 				} else {
 					log.Printf("request err:%+v\n", err)
@@ -150,11 +128,4 @@ func main() {
 	}
 
 	allAggregate.PrintStats()
-
-	if requestSample.Params.Log {
-		toyLog.Wait.Wait()
-		d, _ := filepath.Abs(data.LogDir)
-		log.Printf("log files are saves in:%+v \n", d)
-	}
-
 }
