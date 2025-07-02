@@ -3,7 +3,6 @@ package common
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"io/fs"
 	"log"
@@ -31,7 +30,7 @@ func NewMyLog() *ToyLog {
 func logInit(LogDir string) (f *os.File, err error) {
 	if _, err = os.Stat(LogDir); os.IsNotExist(err) {
 		if err = os.MkdirAll(LogDir, os.ModePerm); err != nil {
-			err = errors.New(fmt.Sprintf("an error occurred while make directory.err:%v \n", err))
+			err = fmt.Errorf("an error occurred while make directory.err:%v \n", err)
 			return
 		}
 	}
@@ -39,7 +38,7 @@ func logInit(LogDir string) (f *os.File, err error) {
 	logName := fmt.Sprintf("http-little-toy-%s.log", time.Now().Format(DateTimeFormatCustom))
 	logPath := path.Join(LogDir, logName)
 	if f, err = os.OpenFile(logPath, os.O_RDWR|os.O_CREATE, fs.ModePerm); err != nil {
-		err = errors.New(fmt.Sprintf("an error occurred while create log file.err:%v \n", err))
+		err = fmt.Errorf("an error occurred while create log file.err:%v \n", err)
 	}
 
 	return
