@@ -1,7 +1,6 @@
 package common
 
 import (
-	"errors"
 	"fmt"
 	"net"
 	"time"
@@ -14,7 +13,7 @@ func ConnectivityTest(ipPorts string) (err error) {
 		return err
 	}
 	if netRes == nil {
-		return errors.New(fmt.Sprintf("the %s is disabled.", ipPorts))
+		return fmt.Errorf("the %s is disabled.", ipPorts)
 	}
 
 	_ = netRes.Close()
