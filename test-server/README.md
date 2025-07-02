@@ -12,6 +12,8 @@ go run main.go  -certFile="server.crt" -keyFile="server.key" -h2
 
 # little-toy测试使用SSL,添加证书验证
 go run . -u https://localhost:9090 -clientCert="./client-cert/ca.crt" -clientKey="./client-cert/ca.key" -caCert="./client-cert/ca.crt" -skipVerify=true
+
+go run . -u https://localhost:9090  -skipVerify=true
 ```
 
 ```txt
