@@ -25,18 +25,18 @@ var (
 
 func initRequestSample() *data.RequestSample {
 	requestSample := new(data.RequestSample)
-	flag.Var(&requestSample.Params.Header, "H", "The http header.")
+	flag.Var(&requestSample.Params.Header, "header", "The http header.")
 	flag.StringVar(&requestSample.Params.Url, "u", "", "The URL you want to test.")
-	flag.StringVar(&requestSample.Params.Method, "M", http.MethodGet, "The http method.")
+	flag.StringVar(&requestSample.Params.Method, "m", http.MethodGet, "The http method.")
 	flag.StringVar(&requestSample.Params.Body, "body", "", "The http body.")
 	flag.IntVar(&requestSample.Params.Duration, "d", 10, "Duration of request.The unit is seconds.")
 	flag.IntVar(&requestSample.Params.Thread, "t", 10, "Number of threads.")
 	flag.BoolVar(&requestSample.Params.KeepAlive, "keepAlive", true, "Use keep-alive for http protocol.")
 	flag.BoolVar(&requestSample.Params.Compression, "compression", true, "Use keep-alive for http protocol.")
-	flag.IntVar(&requestSample.Params.TimeOut, "timeOut", 5, "the time out to wait response.the unit is seconds.")
+	flag.IntVar(&requestSample.Params.Timeout, "timeout", 5, "the time out to wait response.the unit is seconds.")
 	flag.BoolVar(&requestSample.Params.SkipVerify, "skipVerify", false, "TLS skipVerify.")
 	flag.BoolVar(&requestSample.Params.AllowRedirects, "allowRedirects", true, "allowRedirects.")
-	flag.BoolVar(&requestSample.Params.UseHttp2, "useHttp2", false, "useHttp2.")
+	flag.BoolVar(&requestSample.Params.UseHttp2, "h2", false, "useHttp2.")
 	flag.StringVar(&requestSample.Params.ClientCert, "clientCert", "", "clientCert.")
 	flag.StringVar(&requestSample.Params.ClientKey, "clientKey", "", "clientKey.")
 	flag.StringVar(&requestSample.Params.CaCert, "caCert", "", "caCert.")
@@ -72,7 +72,7 @@ func main() {
 			client, clientErr := toyrequest.GetHttpClient(
 				requestSample.Params.KeepAlive,
 				requestSample.Params.Compression,
-				time.Duration(requestSample.Params.TimeOut),
+				time.Duration(requestSample.Params.Timeout),
 				requestSample.Params.SkipVerify,
 				requestSample.Params.AllowRedirects,
 				requestSample.Params.ClientCert,

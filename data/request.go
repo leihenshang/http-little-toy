@@ -47,7 +47,7 @@ type Params struct {
 	GenerateSample bool `json:"-"`
 
 	// 等待响应超时时间
-	TimeOut int `json:"timeOut"`
+	Timeout int `json:"timeout"`
 
 	// 跳过TLS验证
 	SkipVerify bool `json:"skipVerify"`
