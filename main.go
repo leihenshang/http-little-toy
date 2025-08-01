@@ -13,18 +13,17 @@ import (
 
 	"github.com/leihenshang/http-little-toy/common"
 	"github.com/leihenshang/http-little-toy/data"
-	toyrequest "github.com/leihenshang/http-little-toy/request"
+	toyReq "github.com/leihenshang/http-little-toy/request"
 )
 
 var (
 	respChan chan data.RequestStats
-
 	helpTips = flag.Bool("h", false, "show help tips.")
 	version  = flag.Bool("v", false, "show version.")
 )
 
 func initRequestSample() *data.RequestSample {
-	requestSample := new(data.RequestSample)
+	requestSample := &data.RequestSample{}
 	flag.Var(&requestSample.Params.Header, "header", "The http header.")
 	flag.StringVar(&requestSample.Params.Url, "u", "", "The URL you want to test.")
 	flag.StringVar(&requestSample.Params.Method, "m", http.MethodGet, "The http method.")
@@ -52,16 +51,14 @@ func main() {
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt)
 
-	request, err := requestSample.ParseParams()
+	req, err := requestSample.GenReq()
 	if err != nil {
-		log.Fatal(err)
-	} else if err = request.Validate(); err != nil {
 		log.Fatal(err)
 	}
 
 	respChan = make(chan data.RequestStats, requestSample.Params.Thread)
 	fmt.Printf("use %d coroutines,duration %d seconds.\n", requestSample.Params.Thread, requestSample.Params.Duration)
-	fmt.Printf("%s %s header: %v \n", request.Method, request.Url, strings.Join(request.Header, "\n"))
+	fmt.Printf("%s %s header: %v \n", req.Method, req.Url, strings.Join(req.Header, "\n"))
 	fmt.Println("---------------stats---------------")
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(requestSample.Params.Duration)*time.Second)
 	defer cancel()
@@ -69,7 +66,7 @@ func main() {
 	for i := 1; i <= requestSample.Params.Thread; i++ {
 		go func() {
 			httpCtx := context.Background()
-			client, clientErr := toyrequest.GetHttpClient(
+			client, clientErr := toyReq.GetHttpClient(
 				requestSample.Params.KeepAlive,
 				requestSample.Params.Compression,
 				time.Duration(requestSample.Params.Timeout),
@@ -86,7 +83,7 @@ func main() {
 			aggregate := data.RequestStats{MinReqTime: time.Hour}
 		LOOP:
 			for {
-				size, d, _, err := toyrequest.HandleReq(httpCtx, client, request)
+				size, d, _, err := toyReq.HandleReq(httpCtx, client, req)
 				if size > 0 && err == nil {
 					aggregate.Duration += d
 					aggregate.SuccessNum++

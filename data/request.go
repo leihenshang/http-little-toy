@@ -68,9 +68,7 @@ type Params struct {
 	CaCert string `json:"caCert"`
 }
 
-// RequestSample 请求模板对象
 type RequestSample struct {
-	// ExecuteCount uint
 	Params  Params
 	Request Request
 }
@@ -90,8 +88,7 @@ func (r *Request) Validate() (err error) {
 	return
 }
 
-// ParseParams 解析参数
-func (r *RequestSample) ParseParams() (req Request, err error) {
+func (r *RequestSample) GenReq() (req Request, err error) {
 	if r.Params.Url == "" {
 		err = errors.New("the URL cannot be empty.Use the \"-u\" or \"-f\" parameter to set the URL")
 		return
@@ -101,8 +98,7 @@ func (r *RequestSample) ParseParams() (req Request, err error) {
 	req.Method = r.Params.Method
 	req.Body = r.Params.Body
 	req.Header = r.Params.Header
-
-	return
+	return req, req.Validate()
 }
 
 // PrintDefault  打印默认操作

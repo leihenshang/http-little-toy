@@ -16,7 +16,7 @@ type RequestStats struct {
 	RespNum    int
 }
 
-//PrintStats print statistics data
+// PrintStats print statistics data
 func (r *RequestStats) PrintStats() {
 	averageThreadDuration := func() time.Duration {
 		if time.Duration(r.RespNum) <= 0 {
