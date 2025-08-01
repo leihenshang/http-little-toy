@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strings"
 	"time"
 
 	"github.com/leihenshang/http-little-toy/common"
@@ -58,18 +57,16 @@ func main() {
 
 	respChan = make(chan data.RequestStats, reqSample.Params.Thread)
 	fmt.Printf("use %d coroutines,duration %d seconds.\n", reqSample.Params.Thread, reqSample.Params.Duration)
-	fmt.Printf("%s %s header: %v \n", req.Method, req.Url, strings.Join(req.Header, "\n"))
 	fmt.Println("---------------stats---------------")
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(reqSample.Params.Duration)*time.Second)
 	defer cancel()
 
 	for i := 1; i <= reqSample.Params.Thread; i++ {
 		go func() {
-			httpCtx := context.Background()
-			client, clientErr := toyReq.GetHttpClient(
+			client, clientErr := toyReq.GenHttpClient(
 				reqSample.Params.KeepAlive,
 				reqSample.Params.Compression,
-				time.Duration(reqSample.Params.Timeout),
+				time.Duration(reqSample.Params.Timeout)*time.Second,
 				reqSample.Params.SkipVerify,
 				reqSample.Params.AllowRedirects,
 				reqSample.Params.ClientCert,
@@ -83,14 +80,13 @@ func main() {
 			aggregate := data.RequestStats{MinReqTime: time.Hour}
 		LOOP:
 			for {
-				size, d, _, err := toyReq.HandleReq(httpCtx, client, req)
+				size, d, _, err := toyReq.HandleReq(client, req)
 				if size > 0 && err == nil {
 					aggregate.Duration += d
 					aggregate.SuccessNum++
 					aggregate.MaxReqTime = common.MaxTime(aggregate.MaxReqTime, d)
 					aggregate.MinReqTime = common.MinTime(aggregate.MinReqTime, d)
 					aggregate.RespSize += int64(size)
-
 				} else {
 					log.Printf("request err:%+v\n", err)
 					aggregate.ErrNum++

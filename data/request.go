@@ -69,8 +69,8 @@ type Params struct {
 }
 
 type RequestSample struct {
-	Params  Params
-	Request Request
+	Params
+	Request
 }
 
 // Validate 验证请求对象

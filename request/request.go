@@ -1,7 +1,6 @@
 package request
 
 import (
-	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
@@ -17,7 +16,7 @@ import (
 	"golang.org/x/net/http2"
 )
 
-func GetHttpClient(
+func GenHttpClient(
 	keepAlive bool,
 	compression bool,
 	timeout time.Duration,
@@ -34,7 +33,7 @@ func GetHttpClient(
 	disableCompression := !compression
 
 	client.Transport = &http.Transport{
-		ResponseHeaderTimeout: time.Second * timeout,
+		ResponseHeaderTimeout: timeout,
 		DisableCompression:    disableCompression,
 		DisableKeepAlives:     disableKeepAlive,
 		TLSClientConfig:       &tls.Config{InsecureSkipVerify: skipVerify},
@@ -91,8 +90,7 @@ func GetHttpClient(
 	return client, nil
 }
 
-func HandleReq(_ context.Context, client *http.Client, reqObj data.Request,
-) (respSize int, duration time.Duration, bodyBytes []byte, err error) {
+func HandleReq(client *http.Client, reqObj data.Request) (respSize int, duration time.Duration, bodyBytes []byte, err error) {
 	respSize = -1
 	duration = -1
 
@@ -122,7 +120,6 @@ func HandleReq(_ context.Context, client *http.Client, reqObj data.Request,
 		if resp != nil && resp.Body != nil {
 			_ = resp.Body.Close()
 		}
-
 	}()
 
 	bodyBytes, err = io.ReadAll(resp.Body)
@@ -135,11 +132,12 @@ func HandleReq(_ context.Context, client *http.Client, reqObj data.Request,
 		headerSize = int(calculateHttpHeadersSize(resp.Header))
 	}
 
-	if resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusCreated {
+	switch resp.StatusCode {
+	case http.StatusOK, http.StatusCreated:
 		respSize = len(bodyBytes) + headerSize
-	} else if resp.StatusCode == http.StatusMovedPermanently || resp.StatusCode == http.StatusTemporaryRedirect {
+	case http.StatusMovedPermanently, http.StatusTemporaryRedirect:
 		respSize = int(resp.ContentLength) + headerSize
-	} else {
+	default:
 		err = errors.New(fmt.Sprint("http-code:", resp.StatusCode, ",header: ", resp.Header, ",content: ", string(bodyBytes)))
 	}
 
