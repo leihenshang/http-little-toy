@@ -10,7 +10,6 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/leihenshang/http-little-toy/common"
 	"github.com/leihenshang/http-little-toy/data"
 	toyReq "github.com/leihenshang/http-little-toy/request"
 )
@@ -84,8 +83,8 @@ func main() {
 				if size > 0 && err == nil {
 					aggregate.Duration += d
 					aggregate.SuccessNum++
-					aggregate.MaxReqTime = common.MaxTime(aggregate.MaxReqTime, d)
-					aggregate.MinReqTime = common.MinTime(aggregate.MinReqTime, d)
+					aggregate.MaxReqTime = maxTime(aggregate.MaxReqTime, d)
+					aggregate.MinReqTime = minTime(aggregate.MinReqTime, d)
 					aggregate.RespSize += int64(size)
 				} else {
 					log.Printf("request err:%+v\n", err)
@@ -110,8 +109,8 @@ func main() {
 			allAggregate.SuccessNum += r.SuccessNum
 			allAggregate.RespSize += r.RespSize
 			allAggregate.Duration += r.Duration
-			allAggregate.MinReqTime = common.MinTime(allAggregate.MinReqTime, r.MinReqTime)
-			allAggregate.MaxReqTime = common.MaxTime(allAggregate.MaxReqTime, r.MaxReqTime)
+			allAggregate.MinReqTime = minTime(allAggregate.MinReqTime, r.MinReqTime)
+			allAggregate.MaxReqTime = maxTime(allAggregate.MaxReqTime, r.MaxReqTime)
 			allAggregate.RespNum++
 		case <-signalChan:
 			cancel()
@@ -119,4 +118,18 @@ func main() {
 	}
 
 	allAggregate.PrintStats()
+}
+
+func maxTime(first, second time.Duration) time.Duration {
+	if first > second {
+		return first
+	}
+	return second
+}
+
+func minTime(first, second time.Duration) time.Duration {
+	if first < second {
+		return first
+	}
+	return second
 }

@@ -4,9 +4,8 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"net/http"
 	"os"
-
-	"github.com/leihenshang/http-little-toy/common"
 )
 
 type Request struct {
@@ -72,10 +71,7 @@ type RequestSample struct {
 }
 
 func (r *Request) Validate() (err error) {
-	if urlErr := common.CheckUrl(r.Url); urlErr != nil {
-		return urlErr
-	}
-	if methodErr := common.CheckHttpMethod(r.Method); methodErr != nil {
+	if methodErr := CheckHttpMethod(r.Method); methodErr != nil {
 		return methodErr
 	}
 
@@ -130,4 +126,22 @@ func (s *MyStrSlice) String() string {
 func (s *MyStrSlice) Set(value string) error {
 	*s = append(*s, value)
 	return nil
+}
+
+func CheckHttpMethod(method string) error {
+	var httpMethodMap = map[string]struct{}{
+		http.MethodGet:    {},
+		http.MethodHead:   {},
+		http.MethodPost:   {},
+		http.MethodPut:    {},
+		http.MethodPatch:  {},
+		http.MethodDelete: {},
+		// http.MethodConnect,
+		// http.MethodOptions,
+		// http.MethodTrace,
+	}
+	if _, ok := httpMethodMap[method]; ok {
+		return nil
+	}
+	return fmt.Errorf("%s is not in %s.", method, fmt.Sprintf("%v", httpMethodMap))
 }
