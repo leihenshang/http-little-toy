@@ -45,37 +45,37 @@ func initRequestSample() *data.RequestSample {
 }
 
 func main() {
-	requestSample := initRequestSample()
-	requestSample.TipsAndHelp(*helpTips, *version)
+	reqSample := initRequestSample()
+	reqSample.TipsAndHelp(*helpTips, *version)
 
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt)
 
-	req, err := requestSample.GenReq()
+	req, err := reqSample.GenReq()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	respChan = make(chan data.RequestStats, requestSample.Params.Thread)
-	fmt.Printf("use %d coroutines,duration %d seconds.\n", requestSample.Params.Thread, requestSample.Params.Duration)
+	respChan = make(chan data.RequestStats, reqSample.Params.Thread)
+	fmt.Printf("use %d coroutines,duration %d seconds.\n", reqSample.Params.Thread, reqSample.Params.Duration)
 	fmt.Printf("%s %s header: %v \n", req.Method, req.Url, strings.Join(req.Header, "\n"))
 	fmt.Println("---------------stats---------------")
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(requestSample.Params.Duration)*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(reqSample.Params.Duration)*time.Second)
 	defer cancel()
 
-	for i := 1; i <= requestSample.Params.Thread; i++ {
+	for i := 1; i <= reqSample.Params.Thread; i++ {
 		go func() {
 			httpCtx := context.Background()
 			client, clientErr := toyReq.GetHttpClient(
-				requestSample.Params.KeepAlive,
-				requestSample.Params.Compression,
-				time.Duration(requestSample.Params.Timeout),
-				requestSample.Params.SkipVerify,
-				requestSample.Params.AllowRedirects,
-				requestSample.Params.ClientCert,
-				requestSample.Params.ClientKey,
-				requestSample.Params.CaCert,
-				requestSample.Params.UseHttp2,
+				reqSample.Params.KeepAlive,
+				reqSample.Params.Compression,
+				time.Duration(reqSample.Params.Timeout),
+				reqSample.Params.SkipVerify,
+				reqSample.Params.AllowRedirects,
+				reqSample.Params.ClientCert,
+				reqSample.Params.ClientKey,
+				reqSample.Params.CaCert,
+				reqSample.Params.UseHttp2,
 			)
 			if clientErr != nil {
 				log.Fatal(clientErr)
@@ -107,7 +107,7 @@ func main() {
 	}
 
 	allAggregate := data.RequestStats{MinReqTime: time.Hour}
-	for allAggregate.RespNum < requestSample.Params.Thread {
+	for allAggregate.RespNum < reqSample.Params.Thread {
 		select {
 		case r := <-respChan:
 			allAggregate.ErrNum += r.ErrNum
