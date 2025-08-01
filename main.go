@@ -25,66 +25,50 @@ var (
 	version  = flag.Bool("v", false, "show version.")
 )
 
-func initRequestSample() *data.RequestSample {
-	requestSample := &data.RequestSample{}
-	flag.Var(&requestSample.Params.Header, "header", "The http header.")
-	flag.StringVar(&requestSample.Params.Url, "u", "", "The URL you want to test.")
-	flag.StringVar(&requestSample.Params.Method, "m", http.MethodGet, "The http method.")
-	flag.StringVar(&requestSample.Params.Body, "body", "", "The http body.")
-	flag.IntVar(&requestSample.Params.Duration, "d", 10, "Duration of request.The unit is seconds.")
-	flag.IntVar(&requestSample.Params.Thread, "t", 10, "Number of threads.")
-	flag.BoolVar(&requestSample.Params.KeepAlive, "keepAlive", true, "Use keep-alive for http protocol.")
-	flag.BoolVar(&requestSample.Params.Compression, "compression", true, "Use keep-alive for http protocol.")
-	flag.IntVar(&requestSample.Params.Timeout, "timeout", 5, "the time out to wait response.the unit is seconds.")
-	flag.BoolVar(&requestSample.Params.SkipVerify, "skipVerify", false, "TLS skipVerify.")
-	flag.BoolVar(&requestSample.Params.AllowRedirects, "allowRedirects", true, "allowRedirects.")
-	flag.BoolVar(&requestSample.Params.UseHttp2, "h2", false, "useHttp2.")
-	flag.StringVar(&requestSample.Params.ClientCert, "clientCert", "", "clientCert.")
-	flag.StringVar(&requestSample.Params.ClientKey, "clientKey", "", "clientKey.")
-	flag.StringVar(&requestSample.Params.CaCert, "caCert", "", "caCert.")
+func initRequestSample() *data.ToyReq {
+	toyReq := &data.ToyReq{}
+	flag.Var(&toyReq.Header, "header", "The http header.")
+	flag.StringVar(&toyReq.Url, "u", "", "The URL you want to test.")
+	flag.StringVar(&toyReq.Method, "m", http.MethodGet, "The http method.")
+	flag.StringVar(&toyReq.Body, "body", "", "The http body.")
+	flag.IntVar(&toyReq.Duration, "d", 10, "Duration of request.The unit is seconds.")
+	flag.IntVar(&toyReq.Thread, "t", 10, "Number of threads.")
+	flag.BoolVar(&toyReq.KeepAlive, "keepAlive", true, "Use keep-alive for http protocol.")
+	flag.BoolVar(&toyReq.Compression, "compression", true, "Use keep-alive for http protocol.")
+	flag.IntVar(&toyReq.Timeout, "timeout", 5, "the time out to wait response.the unit is seconds.")
+	flag.BoolVar(&toyReq.SkipVerify, "skipVerify", false, "TLS skipVerify.")
+	flag.BoolVar(&toyReq.AllowRedirects, "allowRedirects", true, "allowRedirects.")
+	flag.BoolVar(&toyReq.UseHttp2, "h2", false, "useHttp2.")
+	flag.StringVar(&toyReq.ClientCert, "clientCert", "", "clientCert.")
+	flag.StringVar(&toyReq.ClientKey, "clientKey", "", "clientKey.")
+	flag.StringVar(&toyReq.CaCert, "caCert", "", "caCert.")
 	flag.Parse()
-
-	return requestSample
+	return toyReq
 }
 
 func main() {
-	reqSample := initRequestSample()
-	reqSample.TipsAndHelp(*helpTips, *version)
+	toyReq := initRequestSample()
+	toyReq.TipsAndHelp(*helpTips, *version)
 
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt)
 
-	req, err := reqSample.GenReq()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	respChan = make(chan data.RequestStats, reqSample.Params.Thread)
-	fmt.Printf("use %d coroutines,duration %d seconds.\n", reqSample.Params.Thread, reqSample.Params.Duration)
+	respChan = make(chan data.RequestStats, toyReq.Thread)
+	fmt.Printf("use %d coroutines,duration %d seconds.\n", toyReq.Thread, toyReq.Duration)
 	fmt.Println("---------------stats---------------")
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(reqSample.Params.Duration)*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(toyReq.Duration)*time.Second)
 	defer cancel()
 
-	for i := 1; i <= reqSample.Params.Thread; i++ {
+	for i := 1; i <= toyReq.Thread; i++ {
 		go func() {
-			client, clientErr := GenHttpClient(
-				reqSample.Params.KeepAlive,
-				reqSample.Params.Compression,
-				time.Duration(reqSample.Params.Timeout)*time.Second,
-				reqSample.Params.SkipVerify,
-				reqSample.Params.AllowRedirects,
-				reqSample.Params.ClientCert,
-				reqSample.Params.ClientKey,
-				reqSample.Params.CaCert,
-				reqSample.Params.UseHttp2,
-			)
+			client, clientErr := genHttpClient(toyReq)
 			if clientErr != nil {
 				log.Fatal(clientErr)
 			}
 			aggregate := data.RequestStats{MinReqTime: time.Hour}
 		LOOP:
 			for {
-				size, d, _, err := HandleReq(client, req)
+				size, d, _, err := doReq(client, toyReq)
 				if size > 0 && err == nil {
 					aggregate.Duration += d
 					aggregate.SuccessNum++
@@ -107,7 +91,7 @@ func main() {
 	}
 
 	allAggregate := data.RequestStats{MinReqTime: time.Hour}
-	for allAggregate.RespNum < reqSample.Params.Thread {
+	for allAggregate.RespNum < toyReq.Thread {
 		select {
 		case r := <-respChan:
 			allAggregate.ErrNum += r.ErrNum
@@ -139,53 +123,43 @@ func minTime(first, second time.Duration) time.Duration {
 	return second
 }
 
-func GenHttpClient(
-	keepAlive bool,
-	compression bool,
-	timeout time.Duration,
-	skipVerify bool,
-	allowRedirects bool,
-	clientCert string,
-	clientKey string,
-	caCert string,
-	useHttp2 bool,
-) (client *http.Client, err error) {
+func genHttpClient(reqSample *data.ToyReq) (client *http.Client, err error) {
 	client = &http.Client{}
 
-	disableKeepAlive := !keepAlive
-	disableCompression := !compression
+	disableKeepAlive := !reqSample.KeepAlive
+	disableCompression := !reqSample.Compression
 
 	client.Transport = &http.Transport{
-		ResponseHeaderTimeout: timeout,
+		ResponseHeaderTimeout: time.Duration(reqSample.Timeout) * time.Second,
 		DisableCompression:    disableCompression,
 		DisableKeepAlives:     disableKeepAlive,
-		TLSClientConfig:       &tls.Config{InsecureSkipVerify: skipVerify},
+		TLSClientConfig:       &tls.Config{InsecureSkipVerify: reqSample.SkipVerify},
 	}
 
-	if !allowRedirects {
+	if !reqSample.AllowRedirects {
 		//returning an error when trying to redirect. This prevents the redirection from happening.
 		client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 			return errors.New("redirection not allowed")
 		}
 	}
 
-	if clientCert == "" && clientKey == "" && caCert == "" {
+	if reqSample.ClientCert == "" && reqSample.ClientKey == "" && reqSample.CaCert == "" {
 		return client, nil
 	}
 
-	if clientCert == "" {
+	if reqSample.ClientCert == "" {
 		return nil, fmt.Errorf("client certificate can't be empty")
 	}
-	if clientKey == "" {
+	if reqSample.ClientKey == "" {
 		return nil, fmt.Errorf("client key can't be empty")
 	}
-	cert, err := tls.LoadX509KeyPair(clientCert, clientKey)
+	cert, err := tls.LoadX509KeyPair(reqSample.ClientCert, reqSample.ClientKey)
 	if err != nil {
-		return nil, fmt.Errorf("unable to load cert tried to load %v and %v but got %v", clientCert, clientKey, err)
+		return nil, fmt.Errorf("unable to load cert tried to load %v and %v but got %v", reqSample.ClientCert, reqSample.ClientKey, err)
 	}
 
 	// load our CA certificate
-	clientCACert, err := os.ReadFile(caCert)
+	clientCACert, err := os.ReadFile(reqSample.CaCert)
 	if err != nil {
 		return nil, fmt.Errorf("unable to open cert %v", err)
 	}
@@ -196,14 +170,14 @@ func GenHttpClient(
 	tlsConfig := &tls.Config{
 		Certificates:       []tls.Certificate{cert},
 		RootCAs:            clientCertPool,
-		InsecureSkipVerify: skipVerify,
+		InsecureSkipVerify: reqSample.SkipVerify,
 	}
 
 	t := &http.Transport{
 		TLSClientConfig: tlsConfig,
 	}
 
-	if useHttp2 {
+	if reqSample.UseHttp2 {
 		if err = http2.ConfigureTransport(t); err != nil {
 			return nil, err
 		}
@@ -213,7 +187,7 @@ func GenHttpClient(
 	return client, nil
 }
 
-func HandleReq(client *http.Client, reqObj data.Request) (respSize int, duration time.Duration, bodyBytes []byte, err error) {
+func doReq(client *http.Client, reqObj *data.ToyReq) (respSize int, duration time.Duration, bodyBytes []byte, err error) {
 	respSize = -1
 	duration = -1
 

@@ -8,25 +8,18 @@ import (
 	"os"
 )
 
-type Request struct {
-	Url    string   `json:"url"`
-	Body   string   `json:"body"`
-	Method string   `json:"method"`
-	Header []string `json:"header"`
-}
-
-type Params struct {
+type ToyReq struct {
 	// url
-	Url string `json:"-"`
+	Url string `json:"url"`
 
 	// header
-	Header MyStrSlice `json:"-"`
+	Header MyStrSlice `json:"header"`
 
 	// body
-	Body string `json:"-"`
+	Body string `json:"body"`
 
 	// http Method
-	Method string `json:"-"`
+	Method string `json:"method"`
 
 	// Duration 持续时间
 	Duration int `json:"duration"`
@@ -65,33 +58,19 @@ type Params struct {
 	CaCert string `json:"caCert"`
 }
 
-type RequestSample struct {
-	Params
-	Request
-}
-
-func (r *Request) Validate() (err error) {
-	if methodErr := CheckHttpMethod(r.Method); methodErr != nil {
-		return methodErr
-	}
-
-	return
-}
-
-func (r *RequestSample) GenReq() (req Request, err error) {
-	if r.Params.Url == "" {
+func (r *ToyReq) GenReq() (err error) {
+	if r.Url == "" {
 		err = errors.New("the URL cannot be empty.Use the \"-u\" or \"-f\" parameter to set the URL")
 		return
 	}
 
-	req.Url = r.Params.Url
-	req.Method = r.Params.Method
-	req.Body = r.Params.Body
-	req.Header = r.Params.Header
-	return req, req.Validate()
+	if methodErr := checkHttpMethod(r.Method); methodErr != nil {
+		return methodErr
+	}
+	return nil
 }
 
-func (r *RequestSample) PrintDefault(appName string) {
+func (r *ToyReq) PrintDefault(appName string) {
 	fmt.Printf("Usage: %s <options>", appName)
 	fmt.Println("Options:")
 	flag.VisitAll(func(flag *flag.Flag) {
@@ -105,7 +84,7 @@ func (r *RequestSample) PrintDefault(appName string) {
 	})
 }
 
-func (r *RequestSample) TipsAndHelp(helpTips, version bool) {
+func (r *ToyReq) TipsAndHelp(helpTips, version bool) {
 	if helpTips {
 		r.PrintDefault(AppName)
 		os.Exit(0)
@@ -128,7 +107,7 @@ func (s *MyStrSlice) Set(value string) error {
 	return nil
 }
 
-func CheckHttpMethod(method string) error {
+func checkHttpMethod(method string) error {
 	var httpMethodMap = map[string]struct{}{
 		http.MethodGet:    {},
 		http.MethodHead:   {},
