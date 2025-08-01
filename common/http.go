@@ -3,8 +3,10 @@ package common
 import (
 	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"net/url"
+	"time"
 )
 
 var httpMethodMap = map[string]struct{}{
@@ -19,11 +21,24 @@ var httpMethodMap = map[string]struct{}{
 	// http.MethodTrace,
 }
 
+func ConnectivityTest(ipPorts string) (err error) {
+	netRes, err := net.DialTimeout("tcp", ipPorts, time.Second*5)
+	if err != nil {
+		return err
+	}
+	if netRes == nil {
+		return fmt.Errorf("the %s is disabled.", ipPorts)
+	}
+
+	_ = netRes.Close()
+	return
+}
+
 func CheckHttpMethod(method string) error {
 	if _, ok := httpMethodMap[method]; ok {
 		return nil
 	}
-	return errors.New(fmt.Sprintf("%s is not in %s.", method, fmt.Sprintf("%v", httpMethodMap)))
+	return fmt.Errorf("%s is not in %s.", method, fmt.Sprintf("%v", httpMethodMap))
 }
 
 func CheckUrl(urlAddr string) (err error) {

@@ -9,7 +9,6 @@ import (
 	"github.com/leihenshang/http-little-toy/common"
 )
 
-// Request 请求数据
 type Request struct {
 	Url    string   `json:"url"`
 	Body   string   `json:"body"`
@@ -17,7 +16,6 @@ type Request struct {
 	Header []string `json:"header"`
 }
 
-// Params 请求参数
 type Params struct {
 	// url
 	Url string `json:"-"`
@@ -28,16 +26,16 @@ type Params struct {
 	// body
 	Body string `json:"-"`
 
-	// http 方法
+	// http Method
 	Method string `json:"-"`
 
-	// 持续时间
+	// Duration 持续时间
 	Duration int `json:"duration"`
 
-	// 线程数
+	// Thread 线程数
 	Thread int `json:"thread"`
 
-	// 启用keep alive
+	// KeepAlive 启用keep alive
 	KeepAlive bool `json:"keepAlive"`
 
 	// 启用压缩
@@ -73,14 +71,10 @@ type RequestSample struct {
 	Request
 }
 
-// Validate 验证请求对象
 func (r *Request) Validate() (err error) {
-	// 检查 url 格式
 	if urlErr := common.CheckUrl(r.Url); urlErr != nil {
 		return urlErr
 	}
-
-	// 检查 method
 	if methodErr := common.CheckHttpMethod(r.Method); methodErr != nil {
 		return methodErr
 	}
@@ -101,7 +95,6 @@ func (r *RequestSample) GenReq() (req Request, err error) {
 	return req, req.Validate()
 }
 
-// PrintDefault  打印默认操作
 func (r *RequestSample) PrintDefault(appName string) {
 	fmt.Printf("Usage: %s <options>", appName)
 	fmt.Println("Options:")
