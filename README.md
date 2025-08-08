@@ -51,8 +51,8 @@ Usage: http-little-toy <options>Options:
 
 ## 安装(INSTALLATION)
 
-1. 有go运行时的话，执行 `go install github.com/leihenshang/http-little-toy`
-    - If there is a GO runtime, execute `go install github.com/leihenshang/http-little-toy`
+1. 有go运行时的话，执行 `go install github.com/leihenshang/http-little-toy@latest`
+    - If there is a GO runtime, execute `go install github.com/leihenshang/http-little-toy@latest`
 2. 确保 `go/bin` 目录在全局环境变量里,然后就可以使用 `http-little-toy` 执行测试了
     - Make sure the `go/bin` directory is in the global environment variable, then you can use `http-little-toy` to perform the test.
 3. 或者，你也可以编译运行
