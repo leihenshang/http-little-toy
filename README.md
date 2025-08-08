@@ -59,7 +59,7 @@ Usage: http-little-toy <options>Options:
     - Alternatively, you can also compile and run it.
 
 
-## 编译
+## 编译 （COMPILE）
 
 linux & mac 
 
@@ -93,7 +93,7 @@ go build -o bin/http-little-toy
 go build -o bin/http-little-toy.exe
 ```
 
-#### 执行测试命令
+## 例子 （EXAMPLE）
 
 ```bash
 # 直接使用 (direct use)
