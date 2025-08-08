@@ -9,52 +9,49 @@ import (
 )
 
 type ToyReq struct {
-	// target url
+	// Url target url
 	Url string `json:"url"`
 
-	// header
+	// Header is  HTTP header
 	Header MyStrSlice `json:"header"`
 
-	// request body
+	// Body request body
 	Body string `json:"body"`
 
-	// http Method
+	// Method http Method
 	Method string `json:"method"`
 
-	// Duration 持续时间
+	// Duration time
 	Duration int `json:"duration"`
 
-	// Thread 线程数
+	// Thread is the number of threads
 	Thread int `json:"thread"`
 
-	// KeepAlive 启用keep alive
+	// KeepAlive is whether to use keep-alive
 	KeepAlive bool `json:"keepAlive"`
 
-	// 启用压缩
+	// Compression
 	Compression bool `json:"compression"`
 
-	// 创建请求文件模板
-	GenerateSample bool `json:"-"`
-
-	// 等待响应超时时间
+	// Timeout
 	Timeout int `json:"timeout"`
 
-	// 跳过TLS验证
+	// SkipVerify is whether to skip TLS verification
 	SkipVerify bool `json:"skipVerify"`
 
-	// 允许重定向
+	// AllowRedirects
 	AllowRedirects bool `json:"allowRedirects"`
 
-	// 使用http2
+	// UseHttp2
 	UseHttp2 bool `json:"useHttp2"`
 
-	// 客户端证书
+	// ClientCert
 	ClientCert string `json:"clientCert"`
 
-	// 客户端秘钥
+	// ClientKey
 	ClientKey string `json:"clientKey"`
 
-	// ca证书
+	// CaCert
 	CaCert string `json:"caCert"`
 }
 
