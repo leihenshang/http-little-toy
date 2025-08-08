@@ -101,4 +101,10 @@ go build -o bin/http-little-toy.exe
 
  # 带上header (with header)
  go run . -u http://localhost:9090 -H aaa:bbbb -H ccc:ddd -body "hhhhh2333333" -d 10 -t 10 
+
+ # 复杂一点 （more complicated ）
+ ./http-little-toy -u http://localhost:2025/aa/bb/cc/ee/ff/list -m POST -header token:itoken_1754640941655527771 -header Content-Type:application/json -body='{
+  "pageSize": 100,
+  "page": 1
+}' -d 60
 ```
