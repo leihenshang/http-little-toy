@@ -1,22 +1,16 @@
 # http-little-toy
 
-## 简介-INTRODUCTION
+## 简介(INTRODUCTION)
 
-- 一个简单的 `http` 并发测试工具。
-  - A simple HTTP concurrency testing tool.
-- 如果喜欢它就star⭐️一下吧，让它沉睡在你的收藏库里。
-  - If you like it,please star it and let it sleep in your repository!
-- 造轮子真好玩！orz.
-  - Building wheel is very funny! orz!
+ 这是一个简单的 `http` 并发测试工具。如果喜欢它就点一下star⭐️吧，让它沉睡在你的收藏库。
  
-#### 使用-TUTORIAL
+ This is a sample HTTP concurrency testing tool. If you like it, click on star⭐️,  let it sleep in your collection.
+ 
+## 使用(TUTORIAL)
 
 ```bash
 $ http-little-toy -h
-Usage: httpToy <options>
-Options:
-        -H 
-                 The http header. --default=[].
+Usage: http-little-toy <options>Options:
         -allowRedirects 
                  allowRedirects. --default=true.
         -body 
@@ -30,45 +24,46 @@ Options:
         -compression 
                  Use keep-alive for http protocol. --default=true.
         -d 
-                 Duration of request.The unit is seconds. --default=0.
+                 Duration of request.The unit is seconds. --default=10.
         -h 
                  show help tips. --default=false.
-        -keepAlive 
-                 Use keep-alive for http protocol. --default=true.
-        -log 
-                 record request log to file. default: './log' --default=false.
-        -skipVerify 
-                 TLS skipVerify. --default=false.
-        -t 
-                 Number of threads. --default=0.
-        -timeOut 
-                 the time out to wait response. --default=1000.
-        -u 
-                 The URL you want to test. --default="".
-        -useHttp2 
+        -h2
                  useHttp2. --default=false.
-        -v 
-                 show app version. --default=false.
+        -header
+                 The http header. --default=[].
+        -keepAlive
+                 Use keep-alive for http protocol. --default=true.
+        -m
+                 The http method. --default=GET.
+        -skipVerify
+                 TLS skipVerify. --default=false.
+        -t
+                 Number of threads. --default=10.
+        -timeout
+                 the time out to wait response.the unit is seconds. --default=5.
+        -u
+                 The URL you want to test. --default="".
+        -v
+                 show version. --default=false.
+
 
 ```
 
-#### 安装教程
+## 安装(INSTALLATION)
 
-1. 直接使用 `go install github.com/leihenshang/http-little-toy` ,再把你的`go/bin`放到环境变量里，使用 `http-little-toy` 带上参数，起飞吧，骚年。
+1. 有go运行时的话，执行 `go install github.com/leihenshang/http-little-toy`
+    - If there is a GO runtime, execute `go install github.com/leihenshang/http-little-toy`
+2. 确保 `go/bin` 目录在全局环境变量里,然后就可以使用 `http-little-toy` 执行测试了
+    - Make sure the `go/bin` directory is in the global environment variable, then you can use `http-little-toy` to perform the test.
+3. 或者，你也可以编译运行
+    - Alternatively, you can also compile and run it.
 
-2. 手动编译成二进制文件直接运行，可以放到全局变量中直接从命令行中执行。
 
-#### 手动编译
+## 编译
 
 linux & mac 
 
 ```bash
-# 把项目编译成可执行文件并输出到当前目录
-go build -o http-little-toy
-
-
-## 在linux或mac上编译
-
 # linux 
 CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o bin/http-little-toy
 
@@ -79,7 +74,7 @@ CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o bin/http-little-toy.exe
 CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o bin/http-little-toy
 ```
 
-在windows 上编译
+windows 
 
 ```cmd
 # Mac
@@ -94,31 +89,16 @@ SET GOOS=linux
 SET GOARCH=amd64
 go build -o bin/http-little-toy
 
-#window
+# window
 go build -o bin/http-little-toy.exe
 ```
 
 #### 执行测试命令
 
 ```bash
-# 使用纯命令
- ./httpToy -d 10 -t 80 -u http://127.0.0.1:9090
+# 直接使用 (direct use)
+ ./http-little-toy -d 10 -t 80 -u http://127.0.0.1:9090
 
-# or
-
-# 使用请求文件
-./httpToy -d 10 -t 80 -f request_sample.json
-
-```
-
-```bash
-# 使用test-server 测试
- go run . -u http://localhost:9090 -H aaa:bbbb -H ccc:ddd -body "hhhhh2333333" -d 2 -t 1
-```
-
-
-```bash 
-# Common directive
-go run . -u http://localhost:9090 -H aaa:bbbb -H ccc:ddd -body "hhhhh2333333" -d 10 -t 10 -log=true
-
+ # 带上header (with header)
+ go run . -u http://localhost:9090 -H aaa:bbbb -H ccc:ddd -body "hhhhh2333333" -d 10 -t 10 
 ```
