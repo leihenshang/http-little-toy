@@ -9,13 +9,13 @@ import (
 )
 
 type ToyReq struct {
-	// url
+	// target url
 	Url string `json:"url"`
 
 	// header
 	Header MyStrSlice `json:"header"`
 
-	// body
+	// request body
 	Body string `json:"body"`
 
 	// http Method
@@ -58,7 +58,7 @@ type ToyReq struct {
 	CaCert string `json:"caCert"`
 }
 
-func (r *ToyReq) GenReq() (err error) {
+func (r *ToyReq) Check() (err error) {
 	if r.Url == "" {
 		err = errors.New("the URL cannot be empty.Use the \"-u\" or \"-f\" parameter to set the URL")
 		return

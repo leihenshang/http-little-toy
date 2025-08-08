@@ -48,6 +48,10 @@ func initRequestSample() *data.ToyReq {
 
 func main() {
 	toyReq := initRequestSample()
+	if err := toyReq.Check(); err != nil {
+		log.Fatal(err)
+	}
+
 	toyReq.TipsAndHelp(*helpTips, *version)
 
 	signalChan := make(chan os.Signal, 1)
