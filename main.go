@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math"
 	"net/http"
 	"os"
 	"os/signal"
@@ -34,7 +35,7 @@ func initRequestSample() *data.ToyReq {
 	flag.IntVar(&toyReq.Duration, "d", 10, "Duration of request.The unit is seconds.")
 	flag.IntVar(&toyReq.Thread, "t", 10, "Number of threads.")
 	flag.BoolVar(&toyReq.KeepAlive, "keepAlive", true, "Use keep-alive for http protocol.")
-	flag.BoolVar(&toyReq.Compression, "compression", true, "Use keep-alive for http protocol.")
+	flag.BoolVar(&toyReq.Compression, "compression", true, "Use compression for http protocol.")
 	flag.IntVar(&toyReq.Timeout, "timeout", 5, "the time out to wait response.the unit is seconds.")
 	flag.BoolVar(&toyReq.SkipVerify, "skipVerify", false, "TLS skipVerify.")
 	flag.BoolVar(&toyReq.AllowRedirects, "allowRedirects", true, "allowRedirects.")
@@ -68,7 +69,7 @@ func main() {
 			if clientErr != nil {
 				log.Fatal(clientErr)
 			}
-			aggregate := data.RequestStats{MinReqTime: time.Hour}
+			aggregate := data.RequestStats{MinReqTime: time.Duration(math.MaxInt64)}
 		LOOP:
 			for {
 				size, d, _, err := doReq(client, toyReq)
@@ -93,7 +94,7 @@ func main() {
 		}()
 	}
 
-	allAggregate := data.RequestStats{MinReqTime: time.Hour}
+	allAggregate := data.RequestStats{MinReqTime: time.Duration(math.MaxInt64)}
 	for allAggregate.RespNum < toyReq.Thread {
 		select {
 		case r := <-respChan:
@@ -136,6 +137,7 @@ func genHttpClient(reqSample *data.ToyReq) (client *http.Client, err error) {
 		ResponseHeaderTimeout: time.Duration(reqSample.Timeout) * time.Second,
 		DisableCompression:    disableCompression,
 		DisableKeepAlives:     disableKeepAlive,
+		IdleConnTimeout:       90 * time.Second,
 		TLSClientConfig:       &tls.Config{InsecureSkipVerify: reqSample.SkipVerify},
 	}
 
@@ -158,13 +160,13 @@ func genHttpClient(reqSample *data.ToyReq) (client *http.Client, err error) {
 	}
 	cert, err := tls.LoadX509KeyPair(reqSample.ClientCert, reqSample.ClientKey)
 	if err != nil {
-		return nil, fmt.Errorf("unable to load cert tried to load %v and %v but got %v", reqSample.ClientCert, reqSample.ClientKey, err)
+		return nil, fmt.Errorf("failed to load client certificate: %v", err)
 	}
 
 	// load our CA certificate
 	clientCACert, err := os.ReadFile(reqSample.CaCert)
 	if err != nil {
-		return nil, fmt.Errorf("unable to open cert %v", err)
+		return nil, fmt.Errorf("failed to read CA certificate: %v", err)
 	}
 
 	clientCertPool := x509.NewCertPool()
@@ -181,6 +183,10 @@ func genHttpClient(reqSample *data.ToyReq) (client *http.Client, err error) {
 	}
 
 	if reqSample.UseHttp2 {
+		// 验证HTTP/2支持
+		if _, err := http2.ConfigureTransports(&http.Transport{}); err != nil {
+			return nil, fmt.Errorf("HTTP/2 configuration error: %v", err)
+		}
 		if err = http2.ConfigureTransport(t); err != nil {
 			return nil, err
 		}
@@ -205,7 +211,7 @@ func doReq(client *http.Client, reqObj *data.ToyReq) (respSize int, duration tim
 		if temp := strings.SplitN(v, ":", 2); len(temp) == 2 {
 			req.Header.Add(temp[0], temp[1])
 		} else {
-			fmt.Printf("split header error,value:%+v,split len:%v", v, len(temp))
+			fmt.Printf("split header error, value: %+v, split len: %v\n", v, len(temp))
 		}
 	}
 
@@ -224,7 +230,8 @@ func doReq(client *http.Client, reqObj *data.ToyReq) (respSize int, duration tim
 
 	bodyBytes, err = io.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println("an error occurred doing request(io readAll):", err)
+		fmt.Printf("an error occurred doing request(io readAll): %v\n", err)
+		return respSize, duration, bodyBytes, fmt.Errorf("failed to read response body: %w", err)
 	}
 
 	headerSize := 0
@@ -237,6 +244,10 @@ func doReq(client *http.Client, reqObj *data.ToyReq) (respSize int, duration tim
 		respSize = len(bodyBytes) + headerSize
 	case http.StatusMovedPermanently, http.StatusTemporaryRedirect:
 		respSize = int(resp.ContentLength) + headerSize
+	case http.StatusBadRequest, http.StatusUnauthorized, http.StatusForbidden:
+		err = fmt.Errorf("client error: %d", resp.StatusCode)
+	case http.StatusInternalServerError, http.StatusBadGateway, http.StatusServiceUnavailable:
+		err = fmt.Errorf("server error: %d", resp.StatusCode)
 	default:
 		err = errors.New(fmt.Sprint("http-code:", resp.StatusCode, ",header: ", resp.Header, ",content: ", string(bodyBytes)))
 	}
