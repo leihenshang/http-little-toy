@@ -3,6 +3,8 @@ package data
 import (
 	"fmt"
 	"time"
+
+	"github.com/leihenshang/http-little-toy/msg"
 )
 
 type RequestStats struct {
@@ -13,6 +15,7 @@ type RequestStats struct {
 	ErrNum     int
 	SuccessNum int
 	RespNum    int
+	Res        []string
 }
 
 func (r *RequestStats) PrintStats() {
@@ -32,10 +35,8 @@ func (r *RequestStats) PrintStats() {
 
 	perSecondTimes := float64(r.SuccessNum) / averageThreadDuration.Seconds()
 	byteRate := float64(r.RespSize) / averageThreadDuration.Seconds()
-
-	fmt.Printf("number of success: %v ,number of failed: %v,read: %v KB \n", r.SuccessNum, r.ErrNum, r.RespSize/1024)
-	fmt.Printf("requests/sec %.2f , transfer/sec %.2f KB, average request time: %v \n", perSecondTimes, byteRate/1024, averageRequestTime)
-	fmt.Printf("the slowest request:%v \n", r.MaxReqTime)
-	fmt.Printf("the fastest request:%v \n", r.MinReqTime)
-
+	res := msg.MsgStats.Sprintf(r.SuccessNum, r.ErrNum, r.RespSize/1024,
+		perSecondTimes, byteRate/1024, averageRequestTime, r.MaxReqTime, r.MinReqTime)
+	r.Res = append(r.Res, res)
+	fmt.Println(res)
 }

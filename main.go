@@ -17,6 +17,8 @@ import (
 	"time"
 
 	"github.com/leihenshang/http-little-toy/data"
+	"github.com/leihenshang/http-little-toy/msg"
+	"github.com/leihenshang/http-little-toy/utils"
 	"golang.org/x/net/http2"
 )
 
@@ -24,6 +26,7 @@ var (
 	respChan chan data.RequestStats
 	helpTips = flag.Bool("h", false, "show help tips.")
 	version  = flag.Bool("v", false, "show version.")
+	resFile  = flag.String("resFile", "", "save result to file.")
 )
 
 func initRequestSample() *data.ToyReq {
@@ -48,18 +51,35 @@ func initRequestSample() *data.ToyReq {
 }
 
 func main() {
+	msg.SetLocalize(msg.Localize_Cn)
 	toyReq := initRequestSample()
 	toyReq.TipsAndHelp(*helpTips, *version)
 	if err := toyReq.Check(); err != nil {
 		log.Fatal(err)
 	}
 
+	outputFile, err := checkResFile()
+	if err != nil {
+		log.Fatal(err)
+	} else if outputFile != nil {
+		defer outputFile.Close()
+	}
+
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt)
 
 	respChan = make(chan data.RequestStats, toyReq.Thread)
-	fmt.Printf("use %d coroutines,duration %d seconds.\n", toyReq.Thread, toyReq.Duration)
-	fmt.Println("---------------stats---------------")
+
+	allAggregate := data.RequestStats{MinReqTime: time.Duration(math.MaxInt64)}
+
+	header1 := msg.MsgHeader.Sprintf(toyReq.Thread, toyReq.Duration)
+	allAggregate.Res = append(allAggregate.Res, header1)
+	fmt.Println(header1)
+
+	header2 := msg.MsgSplitLine.Sprintf()
+	allAggregate.Res = append(allAggregate.Res, header2)
+	fmt.Println(header2)
+
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(toyReq.Duration)*time.Second)
 	defer cancel()
 
@@ -95,7 +115,6 @@ func main() {
 		}()
 	}
 
-	allAggregate := data.RequestStats{MinReqTime: time.Duration(math.MaxInt64)}
 	for allAggregate.RespNum < toyReq.Thread {
 		select {
 		case r := <-respChan:
@@ -112,6 +131,9 @@ func main() {
 	}
 
 	allAggregate.PrintStats()
+	if outputFile != nil {
+		outputFile.WriteString(strings.Join(allAggregate.Res, "\n"))
+	}
 }
 
 func maxTime(first, second time.Duration) time.Duration {
@@ -265,4 +287,16 @@ func calculateHttpHeadersSize(headers http.Header) (result int64) {
 	}
 	result += int64(len("\r\n"))
 	return result
+}
+
+func checkResFile() (*os.File, error) {
+	if *resFile == "" {
+		return nil, nil
+	}
+
+	file, err := utils.CreateFile(*resFile)
+	if err != nil {
+		return nil, err
+	}
+	return file, nil
 }
