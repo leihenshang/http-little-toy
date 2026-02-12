@@ -65,9 +65,10 @@ func main() {
 
 	for i := 1; i <= toyReq.Thread; i++ {
 		go func() {
-			client, clientErr := genHttpClient(toyReq)
-			if clientErr != nil {
-				log.Fatal(clientErr)
+			client, err := genHttpClient(toyReq)
+			if err != nil {
+				log.Printf("genHttpClient error: %v", err)
+				return
 			}
 			aggregate := data.RequestStats{MinReqTime: time.Duration(math.MaxInt64)}
 		LOOP:
