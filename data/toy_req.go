@@ -9,49 +9,49 @@ import (
 )
 
 type ToyReq struct {
-	// Url target url
+	// 目标地址 Url target url
 	Url string `json:"url"`
 
-	// Header is  HTTP header
+	// HTTP头 Header
 	Header MyStrSlice `json:"header"`
 
-	// Body request body
+	// 请求体 Body request body
 	Body string `json:"body"`
 
-	// Method http Method
+	// HTTP方法 Method http Method
 	Method string `json:"method"`
 
-	// Duration time
+	// 请求持续时间 Duration time
 	Duration int `json:"duration"`
 
-	// Thread is the number of threads
+	// 线程数（模拟的用户数量） Thread is the number of threads
 	Thread int `json:"thread"`
 
-	// KeepAlive is whether to use keep-alive
+	// 是否启用保持连接  keep-alive
 	KeepAlive bool `json:"keepAlive"`
 
-	// Compression
+	// 是否启用压缩 Compression
 	Compression bool `json:"compression"`
 
-	// Timeout
+	// 超时时间 Timeout
 	Timeout int `json:"timeout"`
 
-	// SkipVerify is whether to skip TLS verification
+	// 是否跳过TLS验证 SkipVerify is whether to skip TLS verification
 	SkipVerify bool `json:"skipVerify"`
 
-	// AllowRedirects
+	// 是否允许重定向 AllowRedirects
 	AllowRedirects bool `json:"allowRedirects"`
 
-	// UseHttp2
+	// 是否启用HTTP/2 UseHttp2
 	UseHttp2 bool `json:"useHttp2"`
 
-	// ClientCert
+	// 客户端证书 ClientCert
 	ClientCert string `json:"clientCert"`
 
-	// ClientKey
+	// 客户端密钥 ClientKey
 	ClientKey string `json:"clientKey"`
 
-	// CaCert
+	// CA证书 CaCert
 	CaCert string `json:"caCert"`
 }
 
@@ -106,15 +106,15 @@ func (s *MyStrSlice) Set(value string) error {
 
 func checkHttpMethod(method string) error {
 	var httpMethodMap = map[string]struct{}{
-		http.MethodGet:    {},
-		http.MethodHead:   {},
-		http.MethodPost:   {},
-		http.MethodPut:    {},
-		http.MethodPatch:  {},
-		http.MethodDelete: {},
-		// http.MethodConnect,
-		// http.MethodOptions,
-		// http.MethodTrace,
+		http.MethodGet:     {},
+		http.MethodHead:    {},
+		http.MethodPost:    {},
+		http.MethodPut:     {},
+		http.MethodPatch:   {},
+		http.MethodDelete:  {},
+		http.MethodConnect: {},
+		http.MethodOptions: {},
+		http.MethodTrace:   {},
 	}
 	if _, ok := httpMethodMap[method]; ok {
 		return nil
