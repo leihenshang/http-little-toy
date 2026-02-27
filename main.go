@@ -23,7 +23,6 @@ import (
 )
 
 var (
-	respChan chan data.RequestStats
 	helpTips = flag.Bool("h", false, "show help tips.")
 	version  = flag.Bool("v", false, "show version.")
 	resFile  = flag.String("resFile", "", "save result to file.")
@@ -68,7 +67,7 @@ func main() {
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt)
 
-	respChan = make(chan data.RequestStats, toyReq.Thread)
+	respChan := make(chan data.RequestStats, toyReq.Thread)
 
 	allAggregate := data.RequestStats{MinReqTime: time.Duration(math.MaxInt64)}
 
@@ -206,12 +205,8 @@ func genHttpClient(reqSample *data.ToyReq) (client *http.Client, err error) {
 	}
 
 	if reqSample.UseHttp2 {
-		// 验证HTTP/2支持
-		if _, err := http2.ConfigureTransports(&http.Transport{}); err != nil {
-			return nil, fmt.Errorf("HTTP/2 configuration error: %v", err)
-		}
 		if err = http2.ConfigureTransport(t); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("HTTP/2 configuration error: %v", err)
 		}
 	}
 
@@ -225,7 +220,7 @@ func doReq(client *http.Client, reqObj *data.ToyReq) (respSize int, duration tim
 
 	req, err := http.NewRequest(reqObj.Method, reqObj.Url, strings.NewReader(reqObj.Body))
 	if err != nil {
-		fmt.Printf("new request failed, err:%v\n", err)
+		log.Printf("new request failed, err:%v\n", err)
 		return
 	}
 	req.Header.Set("User-Agent", fmt.Sprintf("%s/%s", data.AppName, data.Version))
@@ -272,7 +267,7 @@ func doReq(client *http.Client, reqObj *data.ToyReq) (respSize int, duration tim
 	case http.StatusInternalServerError, http.StatusBadGateway, http.StatusServiceUnavailable:
 		err = fmt.Errorf("server error: %d", resp.StatusCode)
 	default:
-		err = errors.New(fmt.Sprint("http-code:", resp.StatusCode, ",header: ", resp.Header, ",content: ", string(bodyBytes)))
+		err = fmt.Errorf("http-code: %d, header: %v, content: %s", resp.StatusCode, resp.Header, string(bodyBytes))
 	}
 
 	return
