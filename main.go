@@ -82,11 +82,12 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(toyReq.Duration)*time.Second)
 	defer cancel()
 
-	for i := 1; i <= toyReq.Thread; i++ {
+	for i := 0; i < toyReq.Thread; i++ {
 		go func() {
 			client, err := genHttpClient(toyReq)
 			if err != nil {
 				log.Printf("genHttpClient error: %v", err)
+				respChan <- data.RequestStats{ErrNum: 1}
 				return
 			}
 			aggregate := data.RequestStats{MinReqTime: time.Duration(math.MaxInt64)}
@@ -200,9 +201,9 @@ func genHttpClient(reqSample *data.ToyReq) (client *http.Client, err error) {
 		InsecureSkipVerify: reqSample.SkipVerify,
 	}
 
-	t := &http.Transport{
-		TLSClientConfig: tlsConfig,
-	}
+	// 复用已配置的Transport，避免丢失超时、压缩等配置
+	t := client.Transport.(*http.Transport)
+	t.TLSClientConfig = tlsConfig
 
 	if reqSample.UseHttp2 {
 		if err = http2.ConfigureTransport(t); err != nil {
@@ -210,7 +211,6 @@ func genHttpClient(reqSample *data.ToyReq) (client *http.Client, err error) {
 		}
 	}
 
-	client.Transport = t
 	return client, nil
 }
 
@@ -229,7 +229,7 @@ func doReq(client *http.Client, reqObj *data.ToyReq) (respSize int, duration tim
 		if temp := strings.SplitN(v, ":", 2); len(temp) == 2 {
 			req.Header.Add(temp[0], temp[1])
 		} else {
-			fmt.Printf("split header error, value: %+v, split len: %v\n", v, len(temp))
+			log.Printf("split header error, value: %+v, split len: %v", v, len(temp))
 		}
 	}
 
@@ -240,15 +240,11 @@ func doReq(client *http.Client, reqObj *data.ToyReq) (respSize int, duration tim
 	}
 	duration = time.Since(start)
 
-	defer func() {
-		if resp != nil && resp.Body != nil {
-			_ = resp.Body.Close()
-		}
-	}()
+	defer resp.Body.Close()
 
 	bodyBytes, err = io.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf("an error occurred doing request(io readAll): %v\n", err)
+		log.Printf("an error occurred doing request(io readAll): %v", err)
 		return respSize, duration, bodyBytes, fmt.Errorf("failed to read response body: %w", err)
 	}
 
