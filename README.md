@@ -173,3 +173,10 @@ Test Results:
 ---
 🌟 **如果您觉得这个工具有用，请给个Star！** ⭐️
 *If you find this tool helpful, please consider giving it a star!* ⭐️
+
+## TODO 待办
+
+- [x] 支持结果输出为文件
+- [ ] 支持结果输出JSON
+- [ ] 添加请求发送进度条显示
+
