@@ -33,7 +33,7 @@ type ToyReq struct {
 	// 是否启用压缩 Compression
 	Compression bool `json:"compression"`
 
-	// 超时时间 Timeout
+	// http请求的总超时时间 Timeout
 	Timeout int `json:"timeout"`
 
 	// 是否跳过TLS验证 SkipVerify is whether to skip TLS verification

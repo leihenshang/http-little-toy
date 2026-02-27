@@ -38,7 +38,7 @@ func initRequestSample() *data.ToyReq {
 	flag.IntVar(&toyReq.Thread, "t", 10, "Number of threads.")
 	flag.BoolVar(&toyReq.KeepAlive, "keepAlive", true, "Use keep-alive for http protocol.")
 	flag.BoolVar(&toyReq.Compression, "compression", true, "Use compression for http protocol.")
-	flag.IntVar(&toyReq.Timeout, "timeout", 5, "the time out to wait response.the unit is seconds.")
+	flag.IntVar(&toyReq.Timeout, "timeout", 10, "the time out to wait response.the unit is seconds.")
 	flag.BoolVar(&toyReq.SkipVerify, "skipVerify", false, "TLS skipVerify.")
 	flag.BoolVar(&toyReq.AllowRedirects, "allowRedirects", true, "allowRedirects.")
 	flag.BoolVar(&toyReq.UseHttp2, "h2", false, "useHttp2.")
@@ -151,16 +151,21 @@ func minTime(first, second time.Duration) time.Duration {
 }
 
 func genHttpClient(reqSample *data.ToyReq) (client *http.Client, err error) {
-	client = &http.Client{}
+	client = &http.Client{
+		Timeout: time.Duration(reqSample.Timeout) * time.Second,
+	}
 
 	disableKeepAlive := !reqSample.KeepAlive
 	disableCompression := !reqSample.Compression
+
+	// 空闲连接超时设置为测试持续时间的1.5倍，确保测试期间连接可用
+	idleConnTimeout := max(time.Duration(reqSample.Duration)*time.Second*3/2, 30*time.Second)
 
 	client.Transport = &http.Transport{
 		ResponseHeaderTimeout: time.Duration(reqSample.Timeout) * time.Second,
 		DisableCompression:    disableCompression,
 		DisableKeepAlives:     disableKeepAlive,
-		IdleConnTimeout:       90 * time.Second,
+		IdleConnTimeout:       idleConnTimeout,
 		TLSClientConfig:       &tls.Config{InsecureSkipVerify: reqSample.SkipVerify},
 	}
 
