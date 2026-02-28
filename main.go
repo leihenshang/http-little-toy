@@ -80,17 +80,16 @@ func main() {
 	allAggregate.Res = append(allAggregate.Res, header2)
 	printLByFormat(*format, header2)
 
+	client, err := genHttpClient(toyReq)
+	if err != nil {
+		log.Fatalf("genHttpClient error: %v", err)
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(toyReq.Duration)*time.Second)
 	defer cancel()
 
 	for i := 0; i < toyReq.Thread; i++ {
 		go func() {
-			client, err := genHttpClient(toyReq)
-			if err != nil {
-				log.Printf("genHttpClient error: %v", err)
-				respChan <- data.RequestStats{ErrNum: 1}
-				return
-			}
 			aggregate := data.RequestStats{MinReqTime: time.Duration(math.MaxInt64)}
 		LOOP:
 			for {
@@ -168,6 +167,9 @@ func genHttpClient(reqSample *data.ToyReq) (client *http.Client, err error) {
 		DisableKeepAlives:     disableKeepAlive,
 		IdleConnTimeout:       idleConnTimeout,
 		TLSClientConfig:       &tls.Config{InsecureSkipVerify: reqSample.SkipVerify},
+		MaxIdleConns:          reqSample.Thread, // 增加最大空闲连接数
+		MaxIdleConnsPerHost:   reqSample.Thread, // 增加每个主机的最大空闲连接数
+		MaxConnsPerHost:       reqSample.Thread, // 增加每个主机的最大连接数
 	}
 
 	if !reqSample.AllowRedirects {
