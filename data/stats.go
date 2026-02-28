@@ -1,6 +1,7 @@
 package data
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -8,6 +9,8 @@ import (
 )
 
 type RequestStats struct {
+	Url        string
+	Format     string
 	RespSize   int64
 	Duration   time.Duration
 	MinReqTime time.Duration
@@ -38,5 +41,16 @@ func (r *RequestStats) PrintStats() {
 	res := msg.MsgStats.Sprintf(r.SuccessNum, r.ErrNum, r.RespSize/1024,
 		perSecondTimes, byteRate/1024, averageRequestTime, r.MaxReqTime, r.MinReqTime)
 	r.Res = append(r.Res, res)
+	if r.Format == "json" {
+		jsonBytes, err := json.Marshal(r)
+		if err != nil {
+			fmt.Println("Error marshalling stats to JSON:", err)
+			return
+		}
+		res = string(jsonBytes)
+		r.Res = r.Res[0:0]
+		r.Res = append(r.Res, res)
+		return
+	}
 	fmt.Println(res)
 }

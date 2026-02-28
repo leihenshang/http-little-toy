@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	listenAddr = flag.String("http", ":9090", "http listen address")
+	listenAddr = flag.String("http", ":9091", "http listen address")
 	certFile   = flag.String("certFile", "", "cert file")
 	keyFile    = flag.String("keyFile", "", "cert key")
 	http2      = flag.Bool("h2", false, "use http2 protocol")

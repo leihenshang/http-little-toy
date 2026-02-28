@@ -26,6 +26,7 @@ var (
 	helpTips = flag.Bool("h", false, "show help tips.")
 	version  = flag.Bool("v", false, "show version.")
 	resFile  = flag.String("resFile", "", "save result to file.")
+	format   = flag.String("format", "raw", "output format (json/csv/raw).")
 )
 
 func initRequestSample() *data.ToyReq {
@@ -69,15 +70,15 @@ func main() {
 
 	respChan := make(chan data.RequestStats, toyReq.Thread)
 
-	allAggregate := data.RequestStats{MinReqTime: time.Duration(math.MaxInt64)}
+	allAggregate := data.RequestStats{MinReqTime: time.Duration(math.MaxInt64), Format: *format, Url: toyReq.Url}
 
 	header1 := msg.MsgHeader.Sprintf(toyReq.Thread, toyReq.Duration)
 	allAggregate.Res = append(allAggregate.Res, header1)
-	fmt.Println(header1)
+	printLByFormat(*format, header1)
 
 	header2 := msg.MsgSplitLine.Sprintf()
 	allAggregate.Res = append(allAggregate.Res, header2)
-	fmt.Println(header2)
+	printLByFormat(*format, header2)
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(toyReq.Duration)*time.Second)
 	defer cancel()
@@ -295,4 +296,10 @@ func checkResFile() (*os.File, error) {
 		return nil, err
 	}
 	return file, nil
+}
+
+func printLByFormat(format string, msg string) {
+	if format == "raw" {
+		fmt.Println(msg)
+	}
 }
