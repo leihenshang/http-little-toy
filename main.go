@@ -55,7 +55,7 @@ func main() {
 	msg.SetLocalize(msg.Localize(*outputLang))
 	toyReq := initRequestSample()
 	toyReq.TipsAndHelp(*helpTips, *version)
-	if err := toyReq.Check(); err != nil {
+	if err := toyReq.Validate(); err != nil {
 		log.Fatal(err)
 	}
 

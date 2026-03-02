@@ -14,7 +14,7 @@ func TestToyReq_Check(t *testing.T) {
 		{
 			name: "URL is empty",
 			toyReq: &ToyReq{
-				Url: "",
+				Url:    "",
 				Method: http.MethodGet,
 			},
 			wantErr: true,
@@ -22,7 +22,7 @@ func TestToyReq_Check(t *testing.T) {
 		{
 			name: "Invalid HTTP method",
 			toyReq: &ToyReq{
-				Url: "http://example.com",
+				Url:    "http://example.com",
 				Method: "INVALID",
 			},
 			wantErr: true,
@@ -30,7 +30,7 @@ func TestToyReq_Check(t *testing.T) {
 		{
 			name: "Valid request",
 			toyReq: &ToyReq{
-				Url: "http://example.com",
+				Url:    "http://example.com",
 				Method: http.MethodGet,
 			},
 			wantErr: false,
@@ -39,7 +39,7 @@ func TestToyReq_Check(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := tt.toyReq.Check()
+			err := tt.toyReq.Validate()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ToyReq.Check() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -54,18 +54,18 @@ func TestCheckHttpMethod(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Valid GET method",
-			method: http.MethodGet,
+			name:    "Valid GET method",
+			method:  http.MethodGet,
 			wantErr: false,
 		},
 		{
-			name: "Valid POST method",
-			method: http.MethodPost,
+			name:    "Valid POST method",
+			method:  http.MethodPost,
 			wantErr: false,
 		},
 		{
-			name: "Invalid method",
-			method: "INVALID",
+			name:    "Invalid method",
+			method:  "INVALID",
 			wantErr: true,
 		},
 	}

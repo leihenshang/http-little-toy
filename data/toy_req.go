@@ -55,9 +55,9 @@ type ToyReq struct {
 	CaCert string `json:"caCert"`
 }
 
-func (r *ToyReq) Check() (err error) {
+func (r *ToyReq) Validate() (err error) {
 	if r.Url == "" {
-		err = errors.New("the URL cannot be empty.Use the \"-u\" or \"-f\" parameter to set the URL")
+		err = errors.New("Use the \"-u\" parameter to set the URL. eg: http-little-toy -u https://example.com")
 		return
 	}
 
