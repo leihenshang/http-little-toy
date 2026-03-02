@@ -16,7 +16,14 @@ var (
 )
 
 func SetLocalize(l Localize) {
-	localize = l
+	switch l {
+	case Localize_Cn:
+		localize = l
+	case Localize_En:
+		localize = l
+	default:
+		localize = Localize_En
+	}
 }
 
 type ToyMsg struct {

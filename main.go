@@ -23,10 +23,11 @@ import (
 )
 
 var (
-	helpTips = flag.Bool("h", false, "show help tips.")
-	version  = flag.Bool("v", false, "show version.")
-	resFile  = flag.String("resFile", "", "save result to file.")
-	format   = flag.String("format", "raw", "output format (json/csv/raw).")
+	helpTips   = flag.Bool("h", false, "show help tips.")
+	version    = flag.Bool("v", false, "show version.")
+	resFile    = flag.String("resFile", "", "save result to file.")
+	format     = flag.String("format", "raw", "output format (json/csv/raw).")
+	outputLang = flag.String("lang", "en", "output language (en/zh).")
 )
 
 func initRequestSample() *data.ToyReq {
@@ -51,7 +52,7 @@ func initRequestSample() *data.ToyReq {
 }
 
 func main() {
-	msg.SetLocalize(msg.Localize_Cn)
+	msg.SetLocalize(msg.Localize(*outputLang))
 	toyReq := initRequestSample()
 	toyReq.TipsAndHelp(*helpTips, *version)
 	if err := toyReq.Check(); err != nil {
