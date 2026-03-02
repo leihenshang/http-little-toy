@@ -36,8 +36,15 @@ func (r *RequestStats) PrintStats() {
 		return r.Duration / time.Duration(r.SuccessNum)
 	}()
 
-	perSecondTimes := float64(r.SuccessNum) / averageThreadDuration.Seconds()
-	byteRate := float64(r.RespSize) / averageThreadDuration.Seconds()
+	var perSecondTimes float64
+	var byteRate float64
+	if averageThreadDuration.Seconds() > 0 {
+		perSecondTimes = float64(r.SuccessNum) / averageThreadDuration.Seconds()
+		byteRate = float64(r.RespSize) / averageThreadDuration.Seconds()
+	} else {
+		perSecondTimes = 0
+		byteRate = 0
+	}
 	res := msg.MsgStats.Sprintf(r.SuccessNum, r.ErrNum, r.RespSize/1024,
 		perSecondTimes, byteRate/1024, averageRequestTime, r.MaxReqTime, r.MinReqTime)
 	r.Res = append(r.Res, res)

@@ -46,27 +46,63 @@ http-little-toy -u http://api.example.com/users -m POST \
   -t 20 -d 60
 ```
 
+### 输出控制 Output Control
+```bash
+# 输出JSON格式结果 Output results in JSON format
+http-little-toy -u http://example.com -t 10 -d 30 -format json
+
+# 将结果保存到文件 Save results to file
+http-little-toy -u http://example.com -t 10 -d 30 -resFile result.txt
+
+# JSON格式并保存到文件 JSON format and save to file
+http-little-toy -u http://example.com -t 10 -d 30 -format json -resFile result.json
+```
+
 ## 命令行参数 Command Line Options
+
+### 基本参数 Basic Parameters
 
 | 参数 | 说明 Description | 默认值 Default | 示例 Example |
 |------|------------------|----------------|--------------|
-| `-u` | 测试目标URL Target URL to test | 必填 Required | `-u http://example.com` |
-| `-m` | HTTP方法 HTTP method | GET | `-m POST` |
+| `-u` | 测试目标URL（必填）Target URL (required) | - | `-u http://example.com` |
+| `-m` | HTTP请求方法 HTTP request method | GET | `-m POST` |
 | `-t` | 并发线程数 Number of concurrent threads | 10 | `-t 50` |
 | `-d` | 测试持续时间(秒) Test duration (seconds) | 10 | `-d 60` |
-| `-header` | 自定义HTTP头部 Custom HTTP headers | [] | `-header "Key: Value"` |
-| `-body` | 请求体内容 Request body | "" | `-body '{"data":"test"}'` |
-| `-keepAlive` | 启用HTTP长连接 Enable HTTP keep-alive | true | `-keepAlive=false` |
-| `-compression` | 启用压缩 Enable compression | true | `-compression=false` |
-| `-timeout` | 请求超时时间(秒) Request timeout (seconds) | 5 | `-timeout 10` |
-| `-h2` | 使用HTTP/2 Use HTTP/2 | false | `-h2=true` |
-| `-skipVerify` | 跳过TLS证书验证 Skip TLS certificate verification | false | `-skipVerify=true` |
+| `-timeout` | 单个请求超时时间(秒) Request timeout (seconds) | 10 | `-timeout 30` |
+| `-header` | 自定义HTTP头部（可多次使用）Custom HTTP headers (can be used multiple times) | [] | `-header "Key: Value"` |
+| `-body` | 请求体内容 Request body content | "" | `-body '{"data":"test"}'` |
+
+### 连接与协议参数 Connection & Protocol Parameters
+
+| 参数 | 说明 Description | 默认值 Default | 示例 Example |
+|------|------------------|----------------|--------------|
+| `-keepAlive` | 启用HTTP长连接（提高性能）Enable HTTP keep-alive (improves performance) | true | `-keepAlive=false` |
+| `-compression` | 启用HTTP压缩传输 Enable HTTP compression | true | `-compression=false` |
+| `-h2` | 使用HTTP/2协议 Use HTTP/2 protocol | false | `-h2=true` |
 | `-allowRedirects` | 允许HTTP重定向 Allow HTTP redirects | true | `-allowRedirects=false` |
-| `-clientCert` | 客户端证书文件 Client certificate file | "" | `-clientCert cert.pem` |
-| `-clientKey` | 客户端密钥文件 Client key file | "" | `-clientKey key.pem` |
-| `-caCert` | CA证书文件 CA certificate file | "" | `-caCert ca.pem` |
-| `-h` | 显示帮助信息 Show help | false | `-h` |
-| `-v` | 显示版本信息 Show version | false | `-v` |
+
+### TLS/SSL安全参数 TLS/SSL Security Parameters
+
+| 参数 | 说明 Description | 默认值 Default | 示例 Example |
+|------|------------------|----------------|--------------|
+| `-skipVerify` | 跳过TLS证书验证（不安全）Skip TLS certificate verification (insecure) | false | `-skipVerify=true` |
+| `-clientCert` | 客户端证书文件路径 Client certificate file path | "" | `-clientCert cert.pem` |
+| `-clientKey` | 客户端私钥文件路径 Client private key file path | "" | `-clientKey key.pem` |
+| `-caCert` | CA证书文件路径 CA certificate file path | "" | `-caCert ca.pem` |
+
+### 输出参数 Output Parameters
+
+| 参数 | 说明 Description | 默认值 Default | 示例 Example |
+|------|------------------|----------------|--------------|
+| `-resFile` | 结果输出文件路径 Result output file path | "" | `-resFile result.txt` |
+| `-format` | 输出格式（raw/json/csv）Output format (raw/json/csv) | raw | `-format json` |
+
+### 帮助参数 Help Parameters
+
+| 参数 | 说明 Description | 默认值 Default | 示例 Example |
+|------|------------------|----------------|--------------|
+| `-h` | 显示帮助信息 Show help information | false | `-h` |
+| `-v` | 显示版本信息 Show version information | false | `-v` |
 
 ## 跨平台编译 Cross-platform Compilation
 
@@ -168,6 +204,52 @@ Test Results:
   - `golang.org/x/net/http2`
   - 其余均为标准库 / Standard library only otherwise
 
+## 性能优化建议 Performance Optimization Tips
+
+### 连接池配置 Connection Pool Configuration
+工具已优化HTTP连接池配置，自动根据线程数调整连接池大小：
+The tool has optimized HTTP connection pool configuration, automatically adjusting pool size based on thread count:
+- `MaxIdleConns`: 等于线程数 / Equals thread count
+- `MaxIdleConnsPerHost`: 等于线程数 / Equals thread count  
+- `MaxConnsPerHost`: 等于线程数 / Equals thread count
+
+### 最佳实践 Best Practices
+1. **合理设置线程数**：建议从较小值开始（如10-20），逐步增加观察性能变化
+   **Set appropriate thread count**: Start with smaller values (e.g., 10-20) and gradually increase while monitoring performance
+
+2. **启用Keep-Alive**：默认启用，可显著提高性能，减少连接建立开销
+   **Enable Keep-Alive**: Enabled by default, significantly improves performance by reducing connection overhead
+
+3. **调整超时时间**：根据目标服务器响应速度调整timeout参数
+   **Adjust timeout**: Set timeout parameter based on target server response speed
+
+4. **监控资源使用**：高并发测试时注意监控客户端CPU和内存使用
+   **Monitor resource usage**: Monitor client CPU and memory usage during high-concurrency tests
+
+## 安全提示 Security Notes
+
+### TLS证书验证 TLS Certificate Verification
+- **生产环境**：建议保持 `skipVerify=false`，确保证书验证
+  **Production**: Keep `skipVerify=false` to ensure certificate verification
+  
+- **测试环境**：可使用 `skipVerify=true` 跳过自签名证书验证
+  **Testing**: Use `skipVerify=true` to skip verification for self-signed certificates
+
+### 客户端证书认证 Client Certificate Authentication
+使用双向TLS认证时，需要同时提供：
+For mutual TLS authentication, provide all three files:
+- 客户端证书（clientCert）
+- 客户端私钥（clientKey）
+- CA证书（caCert）
+
+### 负载测试注意事项 Load Testing Considerations
+- 确保有权对目标服务器进行压力测试
+  Ensure you have permission to stress test the target server
+- 避免对生产环境进行过大压力的测试
+  Avoid excessive load testing on production environments
+- 注意遵守目标服务的使用条款
+  Respect the target service's terms of use
+
 
 
 ---
@@ -179,4 +261,5 @@ Test Results:
 - [x] 支持结果输出为文件
 - [x] 支持结果输出JSON
 - [ ] 添加请求发送进度条显示
+- [ ] 支持 CSV 格式输出
 
