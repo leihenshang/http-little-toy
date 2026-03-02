@@ -23,15 +23,21 @@ import (
 )
 
 var (
-	helpTips   = flag.Bool("h", false, "show help tips.")
-	version    = flag.Bool("v", false, "show version.")
-	resFile    = flag.String("resFile", "", "save result to file.")
-	format     = flag.String("format", "raw", "output format (json/csv/raw).")
-	outputLang = flag.String("lang", "en", "output language (en/zh).")
+	helpTips   = false
+	version    = false
+	resFile    = ""
+	format     = "raw"
+	outputLang = "en"
+	toyReq     = &data.ToyReq{}
 )
 
-func initRequestSample() *data.ToyReq {
-	toyReq := &data.ToyReq{}
+func initParameters() {
+	flag.BoolVar(&helpTips, "h", false, "show help tips.")
+	flag.BoolVar(&version, "v", false, "show version.")
+	flag.StringVar(&resFile, "resFile", "", "save result to file.")
+	flag.StringVar(&format, "format", "raw", "output format (json/csv/raw).")
+	flag.StringVar(&outputLang, "lang", "en", "output language (en/zh).")
+
 	flag.Var(&toyReq.Header, "header", "The http header.")
 	flag.StringVar(&toyReq.Url, "u", "", "The URL you want to test.")
 	flag.StringVar(&toyReq.Method, "m", http.MethodGet, "The http method.")
@@ -48,13 +54,14 @@ func initRequestSample() *data.ToyReq {
 	flag.StringVar(&toyReq.ClientKey, "clientKey", "", "clientKey.")
 	flag.StringVar(&toyReq.CaCert, "caCert", "", "caCert.")
 	flag.Parse()
-	return toyReq
+
+	toyReq.TipsAndHelp(helpTips, version)
+	msg.SetLocalize(msg.Localize(outputLang))
 }
 
 func main() {
-	msg.SetLocalize(msg.Localize(*outputLang))
-	toyReq := initRequestSample()
-	toyReq.TipsAndHelp(*helpTips, *version)
+	initParameters()
+
 	if err := toyReq.Validate(); err != nil {
 		log.Fatal(err)
 	}
@@ -71,15 +78,15 @@ func main() {
 
 	respChan := make(chan data.RequestStats, toyReq.Thread)
 
-	allAggregate := data.RequestStats{MinReqTime: time.Duration(math.MaxInt64), Format: *format, Url: toyReq.Url}
+	allAggregate := data.RequestStats{MinReqTime: time.Duration(math.MaxInt64), Format: format, Url: toyReq.Url}
 
 	header1 := msg.MsgHeader.Sprintf(toyReq.Thread, toyReq.Duration)
 	allAggregate.Res = append(allAggregate.Res, header1)
-	printLByFormat(*format, header1)
+	printLByFormat(format, header1)
 
 	header2 := msg.MsgSplitLine.Sprintf()
 	allAggregate.Res = append(allAggregate.Res, header2)
-	printLByFormat(*format, header2)
+	printLByFormat(format, header2)
 
 	client, err := genHttpClient(toyReq)
 	if err != nil {
@@ -290,11 +297,11 @@ func calculateHttpHeadersSize(headers http.Header) (result int64) {
 }
 
 func checkResFile() (*os.File, error) {
-	if *resFile == "" {
+	if resFile == "" {
 		return nil, nil
 	}
 
-	file, err := utils.CreateFile(*resFile)
+	file, err := utils.CreateFile(resFile)
 	if err != nil {
 		return nil, err
 	}

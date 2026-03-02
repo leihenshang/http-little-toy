@@ -8,7 +8,7 @@ type Localize string
 
 const (
 	Localize_En Localize = "en"
-	Localize_Cn Localize = "cn"
+	Localize_Zh Localize = "zh"
 )
 
 var (
@@ -17,7 +17,7 @@ var (
 
 func SetLocalize(l Localize) {
 	switch l {
-	case Localize_Cn:
+	case Localize_Zh:
 		localize = l
 	case Localize_En:
 		localize = l
@@ -47,14 +47,14 @@ the fastest request:%v
 }
 
 func (t *ToyMsg) Sprintf(args ...any) string {
-	if localize == Localize_Cn {
+	if localize == Localize_Zh {
 		return fmt.Sprintf(t.Cn, args...)
 	}
 	return fmt.Sprintf(t.En, args...)
 }
 
 func (t *ToyMsg) Printf(args ...any) {
-	if localize == Localize_Cn {
+	if localize == Localize_Zh {
 		fmt.Printf(t.Cn, args...)
 		return
 	}

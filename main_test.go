@@ -11,27 +11,27 @@ import (
 
 func TestMaxTime(t *testing.T) {
 	tests := []struct {
-		name  string
-		first time.Duration
-		second time.Duration
+		name     string
+		first    time.Duration
+		second   time.Duration
 		expected time.Duration
 	}{
 		{
-			name:  "First is larger",
-			first: 100 * time.Millisecond,
-			second: 50 * time.Millisecond,
+			name:     "First is larger",
+			first:    100 * time.Millisecond,
+			second:   50 * time.Millisecond,
 			expected: 100 * time.Millisecond,
 		},
 		{
-			name:  "Second is larger",
-			first: 50 * time.Millisecond,
-			second: 100 * time.Millisecond,
+			name:     "Second is larger",
+			first:    50 * time.Millisecond,
+			second:   100 * time.Millisecond,
 			expected: 100 * time.Millisecond,
 		},
 		{
-			name:  "Equal",
-			first: 50 * time.Millisecond,
-			second: 50 * time.Millisecond,
+			name:     "Equal",
+			first:    50 * time.Millisecond,
+			second:   50 * time.Millisecond,
 			expected: 50 * time.Millisecond,
 		},
 	}
@@ -48,27 +48,27 @@ func TestMaxTime(t *testing.T) {
 
 func TestMinTime(t *testing.T) {
 	tests := []struct {
-		name  string
-		first time.Duration
-		second time.Duration
+		name     string
+		first    time.Duration
+		second   time.Duration
 		expected time.Duration
 	}{
 		{
-			name:  "First is smaller",
-			first: 50 * time.Millisecond,
-			second: 100 * time.Millisecond,
+			name:     "First is smaller",
+			first:    50 * time.Millisecond,
+			second:   100 * time.Millisecond,
 			expected: 50 * time.Millisecond,
 		},
 		{
-			name:  "Second is smaller",
-			first: 100 * time.Millisecond,
-			second: 50 * time.Millisecond,
+			name:     "Second is smaller",
+			first:    100 * time.Millisecond,
+			second:   50 * time.Millisecond,
 			expected: 50 * time.Millisecond,
 		},
 		{
-			name:  "Equal",
-			first: 50 * time.Millisecond,
-			second: 50 * time.Millisecond,
+			name:     "Equal",
+			first:    50 * time.Millisecond,
+			second:   50 * time.Millisecond,
 			expected: 50 * time.Millisecond,
 		},
 	}
@@ -85,13 +85,13 @@ func TestMinTime(t *testing.T) {
 
 func TestCalculateHttpHeadersSize(t *testing.T) {
 	headers := http.Header{
-		"Content-Type": []string{"application/json"},
+		"Content-Type":  []string{"application/json"},
 		"Authorization": []string{"Bearer token123"},
 	}
 	result := calculateHttpHeadersSize(headers)
 	// 计算预期大小
 	// Content-Type: application/json -> 24 + 16 = 40
-	// Authorization: Bearer token123 -> 13 + 14 = 27  
+	// Authorization: Bearer token123 -> 13 + 14 = 27
 	// \r\n -> 2
 	expected := int64(66)
 	if result != expected {
@@ -107,43 +107,43 @@ func TestGenHttpClient(t *testing.T) {
 	defer testServer.Close()
 
 	tests := []struct {
-		name     string
-		toyReq   *data.ToyReq
-		wantErr  bool
+		name    string
+		toyReq  *data.ToyReq
+		wantErr bool
 	}{
 		{
 			name: "Basic HTTP client",
 			toyReq: &data.ToyReq{
-				Url: testServer.URL,
-				Timeout: 5,
-				KeepAlive: true,
-				Compression: true,
-				SkipVerify: false,
+				Url:            testServer.URL,
+				Timeout:        5,
+				KeepAlive:      true,
+				Compression:    true,
+				SkipVerify:     false,
 				AllowRedirects: true,
-				Duration: 10,
-				Thread: 5,
+				Duration:       10,
+				Thread:         5,
 			},
 			wantErr: false,
 		},
 		{
 			name: "HTTP client with redirect disabled",
 			toyReq: &data.ToyReq{
-				Url: testServer.URL,
-				Timeout: 5,
+				Url:            testServer.URL,
+				Timeout:        5,
 				AllowRedirects: false,
-				Duration: 10,
-				Thread: 5,
+				Duration:       10,
+				Thread:         5,
 			},
 			wantErr: false,
 		},
 		{
 			name: "HTTP/2 client",
 			toyReq: &data.ToyReq{
-				Url: testServer.URL,
-				Timeout: 5,
+				Url:      testServer.URL,
+				Timeout:  5,
 				UseHttp2: true,
 				Duration: 10,
-				Thread: 5,
+				Thread:   5,
 			},
 			wantErr: false,
 		},
@@ -183,8 +183,6 @@ func TestGenHttpClient(t *testing.T) {
 
 func TestCheckResFile(t *testing.T) {
 	// 测试空文件路径
-	resFile = new(string)
-	*resFile = ""
 	file, err := checkResFile()
 	if err != nil {
 		t.Errorf("checkResFile() error = %v, want nil", err)

@@ -15,7 +15,7 @@ func TestSetLocalize(t *testing.T) {
 		},
 		{
 			name:     "Set Chinese localization",
-			localize: Localize_Cn,
+			localize: Localize_Zh,
 		},
 	}
 
@@ -44,7 +44,7 @@ func TestToyMsg_Sprintf(t *testing.T) {
 		},
 		{
 			name:     "Chinese header message",
-			localize: Localize_Cn,
+			localize: Localize_Zh,
 			msg:      &MsgHeader,
 			args:     []interface{}{10, 30},
 			expected: "使用 [10] 个协程，持续 [30] 秒",
@@ -77,7 +77,7 @@ func TestToyMsg_Printf(t *testing.T) {
 		},
 		{
 			name:     "Chinese printf",
-			localize: Localize_Cn,
+			localize: Localize_Zh,
 			msg:      &MsgHeader,
 			args:     []interface{}{5, 10},
 		},
