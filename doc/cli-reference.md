@@ -42,9 +42,10 @@ Note: for mutual TLS authentication, all three flags must be provided together.
 | `-resFile` | 结果输出文件路径 Result output file path | "" | `-resFile result.txt` |
 | `-format` | 输出格式（raw/json/csv）Output format (raw/json/csv) | raw | `-format json` |
 | `-lang` | 输出语言（en/zh）Output language (en/zh) | en | `-lang zh` |
+| `-progress` | 终端进度条开关（仅 raw 格式且 stdout 为交互终端时生效）Progress bar switch (raw format on an interactive terminal only) | true | `-progress=false` |
 
-说明：`-format json/csv` 时不再逐行打印 raw 输出，统计结果在测试结束后统一输出。
-Note: with `-format json/csv`, incremental raw printing is disabled; stats are emitted at the end.
+说明：`-format json/csv` 时不再逐行打印 raw 输出，统计结果在测试结束后统一输出；此模式下进度条也会自动关闭，保证 stdout 可被机器解析。
+Note: with `-format json/csv`, incremental raw printing is disabled and stats are emitted at the end; the progress bar auto-disables there to keep stdout machine-parseable.
 
 ## 帮助参数 Help Parameters
 

@@ -9,6 +9,7 @@ A simple yet powerful HTTP concurrency testing tool written in Go. Star ⭐️ i
 - **灵活配置** 自定义 Header、Body、超时、TLS/mTLS / Rich CLI options: headers, body, timeout, TLS/mTLS
 - **详细统计** RPS、传输速率、平均/最快/最慢响应时间、成功失败数 / Detailed stats: RPS, transfer rate, latency, success/failure
 - **多种输出** raw / JSON / CSV，可保存到文件 / Multiple output formats, save to file
+- **实时进度条** 终端内显示进度、OK/ERR 计数与实时 RPS，零依赖跨平台，可关闭 / Live progress bar (opt-out, zero-dep, cross-platform)
 - **跨平台** Windows / Linux / macOS / Cross-platform
 
 ## 安装 Installation
@@ -73,6 +74,7 @@ Test Results:
 ## 文档 Documentation
 
 - [命令行参数完整说明 Full CLI Reference](doc/cli-reference.md)
+- [进度条实现原理 Progress Bar Design & Internals](doc/progress-bar.md)
 - [跨平台编译 Cross-platform Build Guide](doc/build.md)
 - [高级用法、性能优化与安全建议 Advanced Usage, Performance Tips & Security Notes](doc/advanced-usage.md)
 - [test-server 本地测试服务 Local Test Server](test-server/README.md)
@@ -85,7 +87,7 @@ Test Results:
 
 - [x] 结果输出为文件 Save result to file
 - [x] 结果输出 JSON JSON output
-- [ ] 请求发送进度条 Progress bar
+- [x] 请求发送进度条 Progress bar
 - [ ] CSV 格式输出完善 Full CSV output support
 
 ---

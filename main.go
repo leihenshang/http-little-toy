@@ -18,6 +18,7 @@ import (
 
 	"github.com/leihenshang/http-little-toy/data"
 	"github.com/leihenshang/http-little-toy/msg"
+	"github.com/leihenshang/http-little-toy/progress"
 	"github.com/leihenshang/http-little-toy/utils"
 	"golang.org/x/net/http2"
 )
@@ -28,6 +29,7 @@ var (
 	resFile    = ""
 	format     = "raw"
 	outputLang = "en"
+	progressOn = true
 	toyReq     = &data.ToyReq{}
 )
 
@@ -37,6 +39,7 @@ func initParameters() {
 	flag.StringVar(&resFile, "resFile", "", "save result to file.")
 	flag.StringVar(&format, "format", "raw", "output format (json/csv/raw).")
 	flag.StringVar(&outputLang, "lang", "en", "output language (en/zh).")
+	flag.BoolVar(&progressOn, "progress", true, "show progress bar (only in raw format on an interactive terminal).")
 
 	flag.Var(&toyReq.Header, "header", "The http header.")
 	flag.StringVar(&toyReq.Url, "u", "", "The URL you want to test.")
@@ -96,6 +99,13 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(toyReq.Duration)*time.Second)
 	defer cancel()
 
+	// 进度条：worker 热路径只做原子计数，由独立协程按 tick 刷新渲染。
+	// Real-time counters are atomic; a dedicated goroutine renders the bar.
+	tracker := progress.NewTracker()
+	if progress.ShouldRender(progressOn, format, os.Stdout) {
+		go progress.Render(ctx, tracker, os.Stdout, time.Duration(toyReq.Duration)*time.Second, progress.DefaultInterval)
+	}
+
 	for i := 0; i < toyReq.Thread; i++ {
 		go func() {
 			aggregate := data.RequestStats{MinReqTime: time.Duration(math.MaxInt64)}
@@ -108,9 +118,12 @@ func main() {
 					aggregate.MaxReqTime = maxTime(aggregate.MaxReqTime, d)
 					aggregate.MinReqTime = minTime(aggregate.MinReqTime, d)
 					aggregate.RespSize += int64(size)
+					tracker.OnSuccess(size)
 				} else {
-					log.Printf("request err:%+v\n", err)
+					// 错误不再逐条打印（避免高并发下刷屏与锁争用，
+					// 也会打乱进度条），由 tracker 聚合后结束时输出摘要。
 					aggregate.ErrNum++
+					tracker.OnFailure(err)
 				}
 
 				select {
@@ -139,6 +152,10 @@ func main() {
 	}
 
 	allAggregate.PrintStats()
+	if summary := tracker.ErrorSummary(); summary != "" {
+		allAggregate.Res = append(allAggregate.Res, summary)
+		printLByFormat(format, summary)
+	}
 	if outputFile != nil {
 		outputFile.WriteString(strings.Join(allAggregate.Res, "\n"))
 	}
