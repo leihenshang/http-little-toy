@@ -55,19 +55,17 @@ http-little-toy -u http://example.com -format json -resFile result.json
 ## 示例输出 Example Output
 
 ```
-use 10 coroutines,duration 30 seconds.
+$ http-little-toy -t 10 -u http://localhost:9091
+use 10 coroutines,duration 10 seconds.
 ---------------stats---------------
-Test Results:
-  Success requests: 2847
-  Failed requests: 3
-  Total data received: 142.50 KB
-  Requests per second: 94.90 RPS
-  Transfer rate: 4.75 KB/s
-  Average request time: 105ms
-  Slowest request: 342ms
-  Fastest request: 45ms
-  Actual test duration: 30.001s
+[==============================] 100%  10/10s OK:150356 ERR:0 RPS:15035.6 3039.4KB/s
+number of success: 150366 ,number of failed: 0,read: 30396.25 KB
+requests/sec 15036.26 , transfer/sec 3039.56 KB, average request time: 642.324µs
+the slowest request:9.12469ms
+the fastest request:220.236µs
 ```
+
+进度条在终端内单行实时刷新（上面是结束时的最后一帧）；RPS 为总请求速率（含成功与失败），目标宕机时仍反映实际发送压力。添加 `-lang zh` 可切换中文输出。
 
 测试过程中按 `Ctrl+C` 可提前结束并输出当前统计 / Press `Ctrl+C` to stop early and print stats so far.
 
@@ -88,7 +86,7 @@ Test Results:
 - [x] 结果输出为文件 Save result to file
 - [x] 结果输出 JSON JSON output
 - [x] 请求发送进度条 Progress bar
-- [ ] CSV 格式输出完善 Full CSV output support
+- [x] CSV 格式输出 CSV output support
 
 ---
 🌟 **如果您觉得这个工具有用，请给个Star！** *If you find this tool helpful, please consider giving it a star!* ⭐️

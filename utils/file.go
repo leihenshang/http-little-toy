@@ -1,24 +1,27 @@
 package utils
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 )
 
+// CreateFile 创建或覆盖写入目标文件（L6）。
+// 使用 O_CREATE|O_TRUNC 原子处理"已存在"场景：既允许覆盖输出，
+// 也消除了原先 stat→create 之间的 TOCTOU 竞态（S3）。
+// CreateFile creates or truncates the target file atomically, allowing
+// overwrite and removing the previous stat→create TOCTOU race.
 func CreateFile(filename string) (*os.File, error) {
-	if _, err := os.Stat(filename); err == nil {
-		return nil, os.ErrExist
-	}
 	dir := filepath.Dir(filename)
 	if dir != "." && dir != "/" {
-		if err := os.MkdirAll(dir, 0755); err != nil {
-			return nil, err
+		if err := os.MkdirAll(dir, 0750); err != nil {
+			return nil, fmt.Errorf("failed to create directory %q: %w", dir, err)
 		}
 	}
 
-	file, err := os.Create(filename)
+	file, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create file %q: %w", filename, err)
 	}
 	return file, nil
 }

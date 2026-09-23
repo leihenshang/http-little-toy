@@ -8,10 +8,10 @@
 |------|------------------|----------------|--------------|
 | `-u` | 测试目标URL（必填）Target URL (required) | - | `-u http://example.com` |
 | `-m` | HTTP请求方法 HTTP request method | GET | `-m POST` |
-| `-t` | 并发线程数 Number of concurrent threads | 10 | `-t 50` |
-| `-d` | 测试持续时间(秒) Test duration (seconds) | 10 | `-d 60` |
-| `-timeout` | 单个请求超时时间(秒) Request timeout (seconds) | 10 | `-timeout 30` |
-| `-header` | 自定义HTTP头部（可多次使用）Custom HTTP headers (can be used multiple times) | [] | `-header "Key: Value"` |
+| `-t` | 并发线程数，上限 10000 Number of concurrent threads (max 10000) | 10 | `-t 50` |
+| `-d` | 测试持续时间(秒)，上限 86400 Test duration (seconds, max 86400) | 10 | `-d 60` |
+| `-timeout` | 单个请求超时时间(秒)，必须为正数 Request timeout (positive seconds) | 10 | `-timeout 30` |
+| `-header` | 自定义HTTP头部（可多次使用；非法或含 CR/LF 的头部会被拒绝启动）Custom HTTP headers, repeatable; invalid or CR/LF-containing entries are rejected at startup | [] | `-header "Key: Value"` |
 | `-body` | 请求体内容 Request body content | "" | `-body '{"data":"test"}'` |
 
 ## 连接与协议参数 Connection & Protocol Parameters
@@ -27,7 +27,7 @@
 
 | 参数 | 说明 Description | 默认值 Default | 示例 Example |
 |------|------------------|----------------|--------------|
-| `-skipVerify` | 跳过TLS证书验证（不安全）Skip TLS certificate verification (insecure) | false | `-skipVerify=true` |
+| `-skipVerify` | 跳过TLS证书验证（不安全，启用时会打印一次告警）Skip TLS certificate verification (insecure, prints a one-off warning) | false | `-skipVerify=true` |
 | `-clientCert` | 客户端证书文件路径 Client certificate file path | "" | `-clientCert cert.pem` |
 | `-clientKey` | 客户端私钥文件路径 Client private key file path | "" | `-clientKey key.pem` |
 | `-caCert` | CA证书文件路径 CA certificate file path | "" | `-caCert ca.pem` |
@@ -44,8 +44,8 @@ Note: for mutual TLS authentication, all three flags must be provided together.
 | `-lang` | 输出语言（en/zh）Output language (en/zh) | en | `-lang zh` |
 | `-progress` | 终端进度条开关（仅 raw 格式且 stdout 为交互终端时生效）Progress bar switch (raw format on an interactive terminal only) | true | `-progress=false` |
 
-说明：`-format json/csv` 时不再逐行打印 raw 输出，统计结果在测试结束后统一输出；此模式下进度条也会自动关闭，保证 stdout 可被机器解析。
-Note: with `-format json/csv`, incremental raw printing is disabled and stats are emitted at the end; the progress bar auto-disables there to keep stdout machine-parseable.
+说明：`-format json/csv` 时不再逐行打印 raw 输出，统计结果在测试结束后以单行 JSON / 「表头+数据行」CSV 输出到 stdout（含 `-resFile` 时同样落盘）；此模式下进度条与错误摘要自动改走 stderr/关闭，保证 stdout 可被机器解析。
+Note: with `-format json/csv`, incremental raw printing is disabled; stats are emitted at the end as a single-line JSON / header+row CSV on stdout (also written to `-resFile`); the progress bar auto-disables and the error summary goes to stderr to keep stdout machine-parseable.
 
 ## 帮助参数 Help Parameters
 
@@ -59,7 +59,7 @@ Note: with `-format json/csv`, incremental raw printing is disabled and stats ar
 工具提供全面的测试结果 / The tool provides comprehensive test results including:
 
 - **成功/失败次数 Success/Failure Count**: 成功和失败的请求数量 / Number of successful and failed requests
-- **吞吐量 Throughput**: 每秒请求数(RPS) / Requests per second (RPS)
+- **吞吐量 Throughput**: 每秒请求数(RPS，含成功与失败，反映实际发送速率) / Requests per second (RPS, success+failed, the offered load rate)
 - **传输速率 Transfer Rate**: 数据传输速度(KB/s) / Data transfer speed (KB/s)
 - **响应时间 Response Time**: 平均、最小和最大请求时间 / Average, minimum, and maximum request times
 - **总数据量 Total Data**: 测试期间传输的数据总量 / Amount of data transferred during the test

@@ -9,8 +9,8 @@ This document explains how the progress bar works and the design trade-offs. Cod
 
 1. **零依赖**：只用 Go 标准库，维持项目「除 `golang.org/x/net` 外无第三方依赖」与 `CGO_ENABLED=0` 交叉编译的现状。
    Zero third-party dependency; keeps the CGO-free cross-compile story intact.
-2. **跨平台**：Linux / macOS / Windows 的 cmd、PowerShell 全部可用，不写任何平台专属 syscall。
-   Works on every platform without a single platform-specific syscall.
+2. **跨平台**：Linux / macOS / Windows 的 cmd、PowerShell 全部可用；终端列宽探测仅用标准库 `syscall`（构建标签平台文件），探测失败自动回退定宽。
+   Cross-platform; width probing uses stdlib `syscall` only, with a safe fixed-width fallback.
 3. **不伤害压测精度**：渲染开销不得干扰 worker 热路径。
    Rendering must never slow down or serialize the request workers.
 4. **机器输出干净**：JSON/CSV 输出与管道重定向场景下自动关闭。
@@ -28,18 +28,33 @@ This document explains how the progress bar works and the design trade-offs. Cod
 
 **为什么不用 ANSI 转义序列**（`\033[K`、光标移动等）：ANSI 在 Windows 传统控制台上需要先开启 VT 模式（`SetConsoleMode`），要么引入 `golang.org/x/term`、要么写 `//go:build windows` 的平台分支。而 `\r` 从 DOS 时代起就是全平台通用能力——这是方案「纯 `\r` 覆盖」跨平台成本最低的根基。
 
-### 定宽填充防「鬼影」Fixed-width Padding
+### 帧宽必须≤ 终端列宽：软换行会摧毁 `\r` 模型
 
-若新一帧比上一帧短，旧帧尾部会残留（例如 `OK:9998` 变 `OK:42` 后剩 `8`）。因此每行统一补齐到 78 列（`lineWidth`），任何一帧都能完整覆盖上一帧：
+`\r` 只能把光标带回**当前可视行**行首。一旦一帧超过终端列宽，终端会**自动软换行**，`\r` 回到的只是折行后的尾段行首——每帧都推开新内容，进度条退化成逐帧堆叠。高吞吐时 `OK:155311`、`RPS:15531.1`、`3139.6KB/s` 会把完整帧撑到 ~84 列，刚好踩中 80 列终端的边界。
 
-```go
-if pad := lineWidth - len(text); pad > 0 {
-    text += strings.Repeat(" ", pad)
-}
-return "\r" + text
-```
+`\r` only returns to the start of the *visual* line. A frame wider than the terminal soft-wraps, breaking the overwrite model entirely.
 
-渲染效果示例（实际为单行滚动覆盖）：
+### 两层防线：动态适配（①）+ 逐级降级（②）
+
+**① 宽度探测**：`Width(os.Stdout)` 每个 tick 重新查询终端列宽（窗口拖大拖小能跟随）：
+
+| 平台 | 手段（全部标准库） |
+|------|--------------------|
+| Linux/macOS/BSD (`//go:build unix`) | `ioctl(TIOCGWINSZ)` |
+| Windows (`//go:build windows`) | `kernel32!GetConsoleScreenBufferInfo`（`syscall.LazyDLL`） |
+| 其他 (`!unix && !windows`) | 返回 0，回退 `fallbackWidth=78` |
+
+**② 降级兜底**：`renderLine` 按固定顺序尝试候选帧，取第一个能放下且**绝不硬截断前先降级**的方案：
+
+1. 完整帧（条 30 格 + 全部信息）；
+2. **收缩进度条格数**（30→最小 8，信息全保留）；
+3. 去掉 `RPS/xKB/s` 速率段；
+4. 大数缩写（`149387→149.4k`，`≥100k` 才触发）；
+5. 仍超长则硬截断——保证任何宽度下都不换行（内容全是 ASCII，按字节截断安全）。
+
+短帧补齐到当前列宽覆盖上一帧防鬼影；探测失败时按 78 列安全宽度兼容 80 列终端。
+
+渲染效果示例（宽终端，实际为单行覆盖刷新）：
 
 ```
 [==========>                   ]  36%  1/3s OK:9865 ERR:0 RPS:8972.4 1813.5KB/s
@@ -99,6 +114,8 @@ frac = float64(elapsed) / float64(total)   // clamp 到 [0, 1]
 
 请求数（OK / ERR / RPS / KB/s）作为辅助指标并排显示。`elapsed` 超过 `total` 时钳制为 100%，防止 ticker 抖动画出超界进度。
 
+**RPS 语义：总请求速率（成功+失败）/ 已耗时**。若只统计成功，目标宕机时进度条会显示 `RPS:0.0` 看似“静止”，掩盖了 worker 实际仍在满负荷发压的事实；KB/s 仍按实际收到的字节数计算（全失败时为 0）。最终统计的 `requests/sec` 同样按总请求数除以实际挂钟时长（`Elapsed`）计算，语义一致。
+
 ## 环境探测：字符设备判断「真终端」Char-device TTY Detection
 
 `ShouldRender(enabled, format, out)` 依次检查三个条件，任何一条不满足即静默关闭进度条：
@@ -109,7 +126,7 @@ frac = float64(elapsed) / float64(total)   // clamp 到 [0, 1]
 
 第 3 条是跨平台 isatty 的「够用近似」：控制台（Linux tty、Windows conhost）在 Go `os` 层呈现为**字符设备**；而 `> file`、`| jq` 重定向后 stdout 变成普通文件/管道，不再是字符设备。三平台行为一致，无需 syscall。
 
-已知边界：重定向到 `/dev/null` 时因其同为字符设备，进度条仍会输出——无害且几乎不产生开销。
+已知边界：重定向到 `/dev/null` 时因其同为字符设备，进度条仍会输出——无害且几乎不产生开销；列宽探测失败（非控制台句柄）时自动回退 78 列安全宽度 + 降级兜底，仍不会换行。
 
 ## main.go 接入点 Integration
 
@@ -117,10 +134,12 @@ frac = float64(elapsed) / float64(total)   // clamp 到 [0, 1]
 // 1. 参数注册（initParameters）
 flag.BoolVar(&progressOn, "progress", true, "show progress bar (only in raw format on an interactive terminal).")
 
-// 2. 创建 tracker、按条件启动渲染协程，与测试共用同一个 ctx
+// 2. 创建 tracker、按条件启动渲染协程，与测试共用同一个 ctx；
+//    widthFn 每 tick 重查列宽，跟随终端窗口缩放
 tracker := progress.NewTracker()
 if progress.ShouldRender(progressOn, format, os.Stdout) {
-    go progress.Render(ctx, tracker, os.Stdout, time.Duration(toyReq.Duration)*time.Second, progress.DefaultInterval)
+	go progress.Render(ctx, tracker, os.Stdout, time.Duration(toyReq.Duration)*time.Second, progress.DefaultInterval,
+		func() int { return progress.Width(os.Stdout) })
 }
 
 // 3. worker 热路径：成功/失败只做原子计数
@@ -145,16 +164,21 @@ if summary := tracker.ErrorSummary(); summary != "" {
 | `TestTrackerConcurrentCounters` | 8 协程并发计数不丢（`-race`） |
 | `TestTrackerErrorSummary` | 无错/同错/首末异错/nil 错误四种摘要形态 |
 | `TestShouldRender` | 开关、json/csv、nil writer、普通文件（非 tty）均正确关闭 |
-| `TestRenderLine` | 50% 帧含 `>` 头标、超界钳制 100%、定宽 78 补齐、无 NaN |
+| `TestRenderLine` | 50% 帧含 `>` 头标、超界钳制 100%、补齐到宽度、无 NaN |
+| `TestRenderLineNeverExceedsWidth` | 核心属性：高吞吐大数帧在 12~120 列任意宽度下可视长度永不超宽 |
+| `TestRenderLineDegradesInOrder` | 降级顺序：70 列先缩条保信息，50 列丢速率段，30 列缩写/截断 |
+| `TestAbbrevInt` | 缩写规则（1.5k/95k/149.4k/1.5M） |
+| `TestWidthOnNonTerminalIsZero` | 普通文件/nil 探测安全返回 0 |
 | `TestRenderFinishesWithNewline` | ctx 结束后立即输出 100% 并以 `\n` 收尾 |
 
 ## 一页总结 Summary
 
 | 问题 | 答案 |
 |------|------|
-| 动态刷新怎么实现？ | `\r` 回行首 + 整行覆盖重绘，全平台通用、零依赖 |
-| 残留鬼影怎么消除？ | 定宽 78 列填充 + 纯 ASCII 内容 |
+| 动态刷新怎么实现？ | `\r` 回行首 + 整行覆盖重绘，全平台通用、零第三方依赖 |
+| 为什么会逐帧堆叠不刷新？ | 帧宽超过终端列宽触发软换行，`\r` 只能回到折行尾段——现按探测宽度自适应 + 逐级降级防换行 |
+| 残留鬼影怎么消除？ | 补齐到当前终端列宽 + 纯 ASCII 内容 |
 | 会不会拖慢压测？ | 不会：worker 只做原子 Add，渲染由独立协程 200ms 节流驱动 |
 | 进度按什么算？ | 时间（elapsed/duration），请求数无上界 |
-| Windows 兼容？ | 天然兼容，不用 ANSI、不用 syscall、不用 cgo |
+| Windows 兼容？ | 兼容：列宽用 kernel32（标准库 LazyDLL），渲染不用 ANSI/cgo |
 | 重定向/JSON 场景？ | `os.ModeCharDevice` 探测 + format==raw 检查，自动静默 |

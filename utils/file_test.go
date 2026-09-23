@@ -30,10 +30,11 @@ func TestCreateFile(t *testing.T) {
 		wantErr:  false,
 		err:      nil,
 	}, {
-		name:     "File already exists",
+		// L6：同名文件现在允许覆盖（O_TRUNC），不再报 os.ErrExist
+		name:     "File already exists (overwritten)",
 		filename: filepath.Join(tempDir, "existing.txt"),
-		wantErr:  true,
-		err:      os.ErrExist,
+		wantErr:  false,
+		err:      nil,
 	}, {
 		name:     "Current directory",
 		filename: "test_current.txt",
@@ -65,7 +66,7 @@ func TestCreateFile(t *testing.T) {
 				return
 			}
 			file.Close()
-			
+
 			// 验证文件是否创建成功
 			if _, err := os.Stat(tt.filename); os.IsNotExist(err) {
 				t.Errorf("CreateFile() did not create file: %s", tt.filename)
@@ -76,5 +77,33 @@ func TestCreateFile(t *testing.T) {
 	// 清理当前目录创建的文件
 	if _, err := os.Stat("test_current.txt"); err == nil {
 		os.Remove("test_current.txt")
+	}
+}
+
+// TestCreateFile_OverwritesAndTruncates 验证 L6：已存在文件被覆盖且截断，
+// 不留旧内容；同时验证新文件的父目录链被自动创建。
+func TestCreateFile_OverwritesAndTruncates(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "nested", "out.txt")
+
+	first, err := CreateFile(path)
+	if err != nil {
+		t.Fatalf("CreateFile() unexpected error: %v", err)
+	}
+	first.WriteString("old content that is quite long......")
+	first.Close()
+
+	second, err := CreateFile(path)
+	if err != nil {
+		t.Fatalf("CreateFile() on existing file: unexpected error %v", err)
+	}
+	second.WriteString("new")
+	second.Close()
+
+	got, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("ReadFile: %v", err)
+	}
+	if string(got) != "new" {
+		t.Errorf("file content = %q, want %q (truncation failed)", got, "new")
 	}
 }
