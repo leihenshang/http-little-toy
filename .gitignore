@@ -22,4 +22,8 @@ client-cert
 .lingma
 
 .qoder
+
+# internal audit docs (not shipped)
+.doc
+
 /*.json
